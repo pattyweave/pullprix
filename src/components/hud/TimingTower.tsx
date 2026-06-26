@@ -35,6 +35,12 @@ export interface TimingTowerProps {
   selectedId?: string | null
   /** Fired with a row id when that row is activated (click / keyboard). */
   onSelect?: (id: string) => void
+  /**
+   * Namespace for the shared-layout selection highlight's `layoutId`. Set this
+   * when more than one TimingTower is mounted at once (e.g. responsive layouts
+   * that render a mobile and desktop copy) so their highlights don't collide.
+   */
+  layoutGroup?: string
   className?: string
 }
 
@@ -57,6 +63,7 @@ export function TimingTower({
   rows,
   selectedId,
   onSelect,
+  layoutGroup = 'timing-tower',
   className,
 }: TimingTowerProps) {
   return (
@@ -96,7 +103,7 @@ export function TimingTower({
                 that glides between rows, plus a soft inner glow. */}
             {selected && (
               <motion.span
-                layoutId="timing-tower-selection"
+                layoutId={`${layoutGroup}-selection`}
                 aria-hidden
                 className="absolute inset-0 rounded-md bg-text/[0.06] ring-1 ring-inset ring-accent/30"
                 style={{ boxShadow: '0 0 24px -8px var(--pp-accent)' }}

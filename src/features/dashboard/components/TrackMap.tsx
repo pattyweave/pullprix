@@ -7,6 +7,12 @@ import { JACAREPAGUA } from '@/features/track/circuits'
 interface TrackMapProps {
   selectedDriverId?: string | null
   onSelect?: (driverId: string) => void
+  /**
+   * Zoom relative to a contain-fit. Desktop passes 1.2 so the track bleeds
+   * behind the corner panels; mobile leaves it at 1 so the whole circuit fits
+   * inside its hero box (no bleeding corners to clip with nothing behind them).
+   */
+  scale?: number
 }
 
 /**
@@ -14,7 +20,11 @@ interface TrackMapProps {
  * snapshot's per-day track positions, which the engine interpolates between
  * days — so markers glide continuously as the timeline plays or is scrubbed.
  */
-export function TrackMap({ selectedDriverId, onSelect }: TrackMapProps) {
+export function TrackMap({
+  selectedDriverId,
+  onSelect,
+  scale = 1,
+}: TrackMapProps) {
   const { snapshot } = useReplay()
 
   const drivers: TrackDriver[] = snapshot.positions.map((p) => {
@@ -28,13 +38,11 @@ export function TrackMap({ selectedDriverId, onSelect }: TrackMapProps) {
     }
   })
 
-  // Zoom past the fit-box so the track dominates the canvas; its empty corners
-  // tuck behind the opaque corner panels.
   return (
     <TrackMapHud
       circuit={JACAREPAGUA}
       drivers={drivers}
-      scale={1.2}
+      scale={scale}
       onSelectDriver={onSelect}
     />
   )

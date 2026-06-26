@@ -6,6 +6,8 @@ import { useReplay } from '@/features/replay'
 interface TimingTowerProps {
   selectedDriverId?: string | null
   onSelect?: (driverId: string) => void
+  /** Namespaces the shared-layout highlight when two towers are mounted. */
+  layoutGroup?: string
 }
 
 /**
@@ -13,7 +15,11 @@ interface TimingTowerProps {
  * replay snapshot, so the standings reorder + animate as the timeline plays.
  * Maps domain data into the component's presentation-only row model.
  */
-export function TimingTower({ selectedDriverId, onSelect }: TimingTowerProps) {
+export function TimingTower({
+  selectedDriverId,
+  onSelect,
+  layoutGroup,
+}: TimingTowerProps) {
   const { snapshot } = useReplay()
 
   const rows: TimingRow[] = snapshot.standings.map((s) => {
@@ -39,6 +45,7 @@ export function TimingTower({ selectedDriverId, onSelect }: TimingTowerProps) {
       rows={rows}
       selectedId={selectedDriverId}
       onSelect={onSelect}
+      layoutGroup={layoutGroup}
     />
   )
 }
