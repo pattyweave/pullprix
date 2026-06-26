@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(pnpm --version)",
+      "Bash(npx --version)",
+      "Bash(npx playwright *)",
+      "Read(//Applications/Google Chrome.app/**)"
+    ]
+  }
+}

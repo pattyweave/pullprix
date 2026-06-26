@@ -1,0 +1,293 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+
+/* =========================================================================
+   PULL PRIX — DESIGN SYSTEM
+   A dark, cinematic, telemetry-inspired HUD language.
+   Principles: black canvas · corner-anchored panels · glow as signature ·
+   tiny uppercase mono labels vs. oversized display numerics · color = meaning.
+   ========================================================================= */
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* ---- Raw palette ----------------------------------------------------- */
+  /* Surfaces: a near-black canvas with subtly lifted panel layers. */
+  --pp-void: oklch(0.16 0.004 270);        /* page background, deepest */
+  --pp-surface: oklch(0.20 0.005 270);     /* panel base */
+  --pp-surface-2: oklch(0.235 0.006 270);  /* raised / hover */
+  --pp-line: oklch(1 0 0 / 8%);            /* hairline border */
+  --pp-line-strong: oklch(1 0 0 / 16%);    /* emphasized border */
+
+  /* Text ramp */
+  --pp-text: oklch(0.97 0 0);              /* primary / values */
+  --pp-text-dim: oklch(0.72 0.01 270);     /* secondary */
+  --pp-text-faint: oklch(0.55 0.01 270);   /* labels, captions */
+
+  /* ---- Status / signal colors (the only saturated hues) --------------- */
+  --pp-success: oklch(0.78 0.18 150);      /* green — OK, fastest, go */
+  --pp-warning: oklch(0.82 0.16 80);       /* amber — caution */
+  --pp-danger: oklch(0.64 0.22 25);        /* red — leader marker, out, stop */
+  --pp-info: oklch(0.70 0.15 250);         /* blue — neutral telemetry */
+  --pp-accent: oklch(0.80 0.19 145);       /* signature green for speed/glow */
+
+  /* ---- Glow tokens (the signature effect) ----------------------------- */
+  --pp-glow-success: 0 0 24px oklch(0.78 0.18 150 / 45%);
+  --pp-glow-danger: 0 0 24px oklch(0.64 0.22 25 / 45%);
+  --pp-glow-accent: 0 0 32px oklch(0.80 0.19 145 / 50%);
+  --pp-glow-soft: 0 0 0 1px var(--pp-line), 0 8px 40px -12px oklch(0 0 0 / 80%);
+
+  /* ---- Collectible rarity tiers (badges) ------------------------------ */
+  /* Ascending prestige: cool steel → blue → violet → hot gold. */
+  --pp-rarity-common: oklch(0.70 0.02 250);
+  --pp-rarity-rare: oklch(0.70 0.15 240);
+  --pp-rarity-epic: oklch(0.68 0.20 300);
+  --pp-rarity-legendary: oklch(0.80 0.16 80);
+
+  /* ---- Spacing rhythm (HUD gutter scale) ------------------------------ */
+  --pp-gutter: 1.5rem;     /* viewport edge inset */
+  --pp-panel-pad: 1.25rem; /* internal panel padding */
+  --pp-stack: 0.875rem;    /* default vertical rhythm between blocks */
+
+  /* ---- Radii ---------------------------------------------------------- */
+  --pp-radius: 0.5rem;
+
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================================================
+   shadcn token remap → dark cinematic theme
+   Keeps shadcn component names working while re-skinning everything.
+   ========================================================================= */
+:root {
+  --background: var(--pp-void);
+  --foreground: var(--pp-text);
+
+  --card: var(--pp-surface);
+  --card-foreground: var(--pp-text);
+  --popover: var(--pp-surface);
+  --popover-foreground: var(--pp-text);
+
+  --primary: var(--pp-accent);
+  --primary-foreground: oklch(0.16 0.004 270);
+  --secondary: var(--pp-surface-2);
+  --secondary-foreground: var(--pp-text);
+
+  --muted: var(--pp-surface-2);
+  --muted-foreground: var(--pp-text-faint);
+  --accent: var(--pp-surface-2);
+  --accent-foreground: var(--pp-text);
+
+  --destructive: var(--pp-danger);
+  --border: var(--pp-line);
+  --input: var(--pp-line-strong);
+  --ring: var(--pp-accent);
+
+  --radius: var(--pp-radius);
+}
+
+@theme inline {
+  /* Typefaces */
+  --font-sans: 'Geist Variable', system-ui, sans-serif;
+  --font-heading: 'Geist Variable', system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
+
+  /* Surface colors as Tailwind utilities (bg-surface, text-text-dim, …) */
+  --color-void: var(--pp-void);
+  --color-surface: var(--pp-surface);
+  --color-surface-2: var(--pp-surface-2);
+  --color-line: var(--pp-line);
+  --color-line-strong: var(--pp-line-strong);
+
+  --color-text: var(--pp-text);
+  --color-text-dim: var(--pp-text-dim);
+  --color-text-faint: var(--pp-text-faint);
+
+  /* Status colors as utilities (text-success, bg-danger, …) */
+  --color-success: var(--pp-success);
+  --color-warning: var(--pp-warning);
+  --color-danger: var(--pp-danger);
+  --color-info: var(--pp-info);
+  --color-accent: var(--pp-accent);
+
+  /* shadcn names preserved */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Typographic scale — telemetry registers.
+     Two extremes (tiny labels / huge display) with a small middle. */
+  --text-label: 0.6875rem;     /* 11px uppercase wide-tracked labels */
+  --text-label--line-height: 1;
+  --text-label--letter-spacing: 0.14em;
+
+  --text-value: 1.125rem;      /* 18px telemetry values */
+  --text-value--line-height: 1.1;
+
+  --text-display: 4.5rem;      /* 72px hero numerics (speed, position) */
+  --text-display--line-height: 0.9;
+  --text-display--letter-spacing: -0.02em;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.85);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.6);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    margin: 0;
+    /* Faint vignette + grain-free radial lift behind the HUD so the canvas
+       reads as a "screen" rather than flat black. */
+    background-image:
+      radial-gradient(
+        ellipse 120% 80% at 50% 0%,
+        oklch(0.24 0.01 270 / 40%),
+        transparent 60%
+      );
+    background-attachment: fixed;
+  }
+
+  /* Telemetry numerics default to tabular mono everywhere. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+}
+
+/* =========================================================================
+   REUSABLE HUD UTILITIES
+   Class-based so any future screen inherits the language for free.
+   ========================================================================= */
+@layer components {
+  /* ---- Labels & values ------------------------------------------------ */
+  .hud-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    letter-spacing: var(--text-label--letter-spacing);
+    text-transform: uppercase;
+    color: var(--pp-text-faint);
+    font-weight: 500;
+  }
+
+  .hud-value {
+    font-family: var(--font-mono);
+    font-size: var(--text-value);
+    line-height: var(--text-value--line-height);
+    color: var(--pp-text);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hud-display {
+    font-family: var(--font-heading);
+    font-size: var(--text-display);
+    line-height: var(--text-display--line-height);
+    letter-spacing: var(--text-display--letter-spacing);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Panels --------------------------------------------------------- */
+  /* The base HUD panel: hairline border, faint translucent fill, soft lift.
+     No drop shadows of the corporate kind — just depth + a thin ring. */
+  .hud-panel {
+    background:
+      linear-gradient(
+        180deg,
+        oklch(1 0 0 / 3%),
+        transparent 40%
+      ),
+      var(--pp-surface);
+    border: 1px solid var(--pp-line);
+    border-radius: var(--pp-radius);
+    box-shadow: var(--pp-glow-soft);
+    backdrop-filter: blur(8px);
+  }
+
+  /* A frameless panel — just a tinted region, used for corner HUD clusters
+     that should feel painted onto the canvas rather than boxed. */
+  .hud-panel-ghost {
+    background: linear-gradient(
+      180deg,
+      oklch(0.20 0.005 270 / 70%),
+      oklch(0.16 0.004 270 / 40%)
+    );
+    border: 1px solid var(--pp-line);
+    border-radius: var(--pp-radius);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Section divider hairline. */
+  .hud-rule {
+    height: 1px;
+    background: var(--pp-line);
+    border: 0;
+  }
+
+  /* ---- Status accents ------------------------------------------------- */
+  /* A small status dot with matching glow — the live-telemetry tell. */
+  .hud-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    display: inline-block;
+  }
+  .hud-dot--success { background: var(--pp-success); box-shadow: var(--pp-glow-success); }
+  .hud-dot--danger  { background: var(--pp-danger);  box-shadow: var(--pp-glow-danger); }
+  .hud-dot--warning { background: var(--pp-warning); box-shadow: 0 0 18px oklch(0.82 0.16 80 / 45%); }
+  .hud-dot--neutral { background: var(--pp-text-faint); }
+
+  /* Leading accent bar (team / status color) on list rows. */
+  .hud-accent-bar {
+    width: 3px;
+    align-self: stretch;
+    border-radius: 9999px;
+  }
+
+  /* Glow text helpers for hero numerics. */
+  .hud-glow-accent { color: var(--pp-accent); text-shadow: var(--pp-glow-accent); }
+  .hud-glow-danger { color: var(--pp-danger); text-shadow: var(--pp-glow-danger); }
+
+  /* ---- HUD chip ------------------------------------------------------- */
+  .hud-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--pp-line-strong);
+    border-radius: 9999px;
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: var(--text-label--letter-spacing);
+    text-transform: uppercase;
+    color: var(--pp-text-dim);
+  }
+}
