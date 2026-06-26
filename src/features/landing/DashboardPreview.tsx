@@ -47,24 +47,35 @@ function PreviewInner() {
   })
 
   return (
-    <div className="hud-panel relative aspect-[16/11] w-full overflow-hidden">
-      {/* Track fills the frame */}
+    <div className="hud-panel relative aspect-4/5 w-full overflow-hidden sm:aspect-16/11">
+      {/* Track fills the frame. Taller mobile frame + a smaller scale keeps the
+          circuit clear of the overlay panels instead of bleeding under them. */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <TrackMap circuit={JACAREPAGUA} drivers={trackDrivers} scale={1.15} />
+        <TrackMap
+          circuit={JACAREPAGUA}
+          drivers={trackDrivers}
+          className="scale-90 sm:scale-100"
+          scale={1.15}
+        />
       </div>
 
-      {/* Mini timing tower, top-left */}
-      <div className="hud-panel-ghost absolute left-3 top-3 w-36 px-1.5 py-2">
+      {/* Mini timing tower, top-left. Narrower + fewer rows on mobile so it
+          never spills across the track or collides with the Season chip. */}
+      <div className="hud-panel-ghost absolute left-3 top-3 w-40 px-1.5 py-2 sm:w-36">
         <span className="hud-label mb-1 block px-1.5 text-text-dim">
           Timing Tower
         </span>
-        <div className="pointer-events-none scale-[0.92] [transform-origin:top_left]">
-          <TimingTower rows={rows.slice(0, 5)} selectedId={leaderId} />
+        {/* w-full so the tower lays out to the panel's inner width and flex-1 on
+            the initials column absorbs the slack — keeping the points column
+            inside the border. No transform scale: it left the layout box at
+            full width while shrinking pixels, which is what pushed points out. */}
+        <div className="pointer-events-none w-full">
+          <TimingTower rows={rows.slice(0, 3)} selectedId={leaderId} />
         </div>
       </div>
 
       {/* Session chip, top-right */}
-      <div className="hud-panel-ghost absolute right-3 top-3 flex flex-col gap-0.5 px-3 py-2">
+      <div className="hud-panel-ghost absolute right-3 top-3 flex flex-col gap-0.5 px-2.5 py-1.5 sm:px-3 sm:py-2">
         <span className="hud-label text-text-faint">Season</span>
         <span className="hud-value tabular leading-none">
           Day {currentDay}
