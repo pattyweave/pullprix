@@ -61,16 +61,14 @@ function PreviewInner() {
 
       {/* Mini timing tower, top-left. Narrower + fewer rows on mobile so it
           never spills across the track or collides with the Season chip. */}
-      <div className="hud-panel-ghost absolute left-3 top-3 w-40 px-1.5 py-2 sm:w-36">
+      <div className="hud-panel-ghost absolute left-3 top-3 w-40 px-1.5 py-2 sm:w-44">
         <span className="hud-label mb-1 block px-1.5 text-text-dim">
           Timing Tower
         </span>
-        {/* w-full so the tower lays out to the panel's inner width and flex-1 on
-            the initials column absorbs the slack — keeping the points column
-            inside the border. No transform scale: it left the layout box at
-            full width while shrinking pixels, which is what pushed points out. */}
+        {/* `dense` tightens the row gaps and columns so the full row — points
+            included — fits inside this narrow panel without overflowing. */}
         <div className="pointer-events-none w-full">
-          <TimingTower rows={rows.slice(0, 3)} selectedId={leaderId} />
+          <TimingTower rows={rows.slice(0, 3)} selectedId={leaderId} dense />
         </div>
       </div>
 

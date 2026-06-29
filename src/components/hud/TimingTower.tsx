@@ -36,6 +36,12 @@ export interface TimingTowerProps {
   /** Fired with a row id when that row is activated (click / keyboard). */
   onSelect?: (id: string) => void
   /**
+   * Compact rows for tight embeddings (e.g. the marketing preview): smaller
+   * gaps and column widths so the full row — including the points column —
+   * fits inside a narrow panel without overflowing the border.
+   */
+  dense?: boolean
+  /**
    * Namespace for the shared-layout selection highlight's `layoutId`. Set this
    * when more than one TimingTower is mounted at once (e.g. responsive layouts
    * that render a mobile and desktop copy) so their highlights don't collide.
@@ -63,6 +69,7 @@ export function TimingTower({
   rows,
   selectedId,
   onSelect,
+  dense = false,
   layoutGroup = 'timing-tower',
   className,
 }: TimingTowerProps) {
@@ -92,7 +99,8 @@ export function TimingTower({
               }
             }}
             className={cn(
-              'group relative flex cursor-pointer items-center gap-3 py-2.5 pl-3 pr-2',
+              'group relative flex cursor-pointer items-center',
+              dense ? 'gap-1.5 py-1.5 pl-2 pr-1.5' : 'gap-3 py-2.5 pl-3 pr-2',
               'outline-none transition-colors duration-200',
               // Subtle hover glow — a faint surface lift, no harsh fill.
               'hover:bg-text/[0.03]',
@@ -126,7 +134,8 @@ export function TimingTower({
             {/* Position */}
             <span
               className={cn(
-                'relative z-10 w-4 text-center font-mono text-xs tabular-nums transition-colors',
+                'relative z-10 shrink-0 text-center font-mono text-xs tabular-nums transition-colors',
+                dense ? 'w-3' : 'w-4',
                 selected ? 'text-text' : 'text-text-faint',
               )}
             >
@@ -136,7 +145,7 @@ export function TimingTower({
             {/* Initials — primary label, uppercase */}
             <span
               className={cn(
-                'relative z-10 flex-1 font-heading text-sm font-semibold uppercase tracking-[0.08em] transition-colors',
+                'relative z-10 min-w-0 flex-1 truncate font-heading text-sm font-semibold uppercase tracking-[0.08em] transition-colors',
                 selected
                   ? 'text-text'
                   : 'text-text-dim group-hover:text-text',
@@ -149,7 +158,7 @@ export function TimingTower({
             {row.gap !== undefined && (
               <span
                 className={cn(
-                  'hud-label relative z-10 tabular-nums',
+                  'hud-label relative z-10 shrink-0 tabular-nums',
                   GAP_TONE[row.gapTone ?? 'default'],
                 )}
               >
@@ -160,7 +169,8 @@ export function TimingTower({
             {/* Points */}
             <span
               className={cn(
-                'relative z-10 w-9 text-right font-mono text-xs font-semibold tabular-nums transition-colors',
+                'relative z-10 shrink-0 text-right font-mono text-xs font-semibold tabular-nums transition-colors',
+                dense ? 'w-7' : 'w-9',
                 selected ? 'text-accent' : 'text-text-dim',
               )}
             >
