@@ -4,6 +4,8 @@ import { Play } from 'lucide-react'
 
 import { Chip } from '@/components/hud'
 
+import lockup from '@/assets/logo+wordmark.svg'
+
 import { DashboardPreview } from './DashboardPreview'
 
 /**
@@ -20,6 +22,12 @@ export function HeroSection() {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="flex flex-col items-start gap-6"
       >
+        <img
+          src={lockup}
+          alt="Pull Prix"
+          className="h-9 w-auto"
+        />
+
         <Chip>Season-based code review</Chip>
 
         <h1 className="font-heading text-5xl font-bold leading-[0.98] tracking-tight text-text sm:text-6xl">

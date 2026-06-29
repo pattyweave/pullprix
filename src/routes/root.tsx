@@ -1,5 +1,7 @@
 import { Link, Outlet, createRootRoute } from '@tanstack/react-router'
 
+import logoMark from '@/assets/logo.svg'
+
 /**
  * Root route — minimal app shell. A slim, low-contrast top strip keeps the
  * focus on the HUD canvas below.
@@ -14,9 +16,10 @@ function RootLayout() {
       <nav className="flex h-13 items-center gap-3 border-b border-line px-(--pp-gutter)">
         <Link
           to="/"
-          className="hud-label text-text transition-colors hover:text-accent"
+          className="transition-opacity hover:opacity-80"
+          aria-label="Pull Prix — home"
         >
-          ◢ Pull Prix
+          <img src={logoMark} alt="Pull Prix" className="h-6 w-auto" />
         </Link>
         <span className="ml-auto">
           <Link
