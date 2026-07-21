@@ -636,7 +636,7 @@ Fail safely when required configuration is missing and keep secrets server-only.
 
 ## PP-012 — Add database migrations and organization tenancy
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-006, PP-010
 

@@ -12,6 +12,7 @@
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
+    "supabase:test-db": "supabase test db",
     "supabase:functions": "supabase functions serve"
   },
   "dependencies": {

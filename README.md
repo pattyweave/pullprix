@@ -62,6 +62,12 @@ Rebuild the local database from committed migrations and `supabase/seed.sql`:
 npm run supabase:reset
 ```
 
+Run the PostgreSQL schema and tenant-isolation tests against the local stack:
+
+```sh
+npm run supabase:test-db
+```
+
 Stop the local stack when finished:
 
 ```sh
@@ -93,6 +99,7 @@ values. The public health function intentionally has no secret dependency.
 npm run test
 npm run lint
 npm run build
+npm run supabase:test-db
 ```
 
 The Edge Function handler is tested through Vitest without requiring Docker.
