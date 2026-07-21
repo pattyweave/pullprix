@@ -58,3 +58,6 @@ enabled = false
 
 [functions.health]
 verify_jwt = false
+
+[functions.process-jobs]
+verify_jwt = false

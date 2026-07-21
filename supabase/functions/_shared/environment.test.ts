@@ -50,6 +50,20 @@ describe("server environment", () => {
     ).toBe("hosted-value")
   })
 
+  it("prefers a least-privilege automation key when configured", () => {
+    const { SUPABASE_SECRET_KEY: _, ...hostedEnvironment } = validEnvironment
+
+    expect(
+      readServerEnvironment({
+        ...hostedEnvironment,
+        SUPABASE_SECRET_KEYS: JSON.stringify({
+          automations: "automation-value",
+          default: "hosted-value",
+        }),
+      }).supabaseSecretKey,
+    ).toBe("automation-value")
+  })
+
   it("reports variable names without leaking their values", () => {
     const invalidEnvironment = {
       ...validEnvironment,

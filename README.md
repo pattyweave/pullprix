@@ -112,6 +112,8 @@ Database reset and live function invocation require the local Supabase stack.
   [`docs/adr-001-mvp-platform.md`](docs/adr-001-mvp-platform.md)
 - GitHub App implementation handoff:
   [`docs/github-app-handoff.md`](docs/github-app-handoff.md)
+- Background-job operations:
+  [`docs/background-jobs-runbook.md`](docs/background-jobs-runbook.md)
 
 Build only what the active roadmap ticket requires. Paid infrastructure and
 enterprise architecture are intentionally deferred until observed usage or a

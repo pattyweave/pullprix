@@ -54,13 +54,39 @@ function readSupabaseSecret(environment: Environment) {
 
   try {
     const parsed = JSON.parse(secretDictionary) as Record<string, unknown>
-    const defaultSecret = parsed.default
-    return typeof defaultSecret === "string" && defaultSecret.trim()
-      ? defaultSecret.trim()
+    const automationSecret = parsed.automations ?? parsed.default
+    return typeof automationSecret === "string" && automationSecret.trim()
+      ? automationSecret.trim()
       : undefined
   } catch {
     return undefined
   }
+}
+
+export type SupabaseServiceEnvironment = {
+  supabaseSecretKey: string
+  supabaseUrl: string
+}
+
+export function readSupabaseServiceEnvironment(
+  environment: Environment,
+): SupabaseServiceEnvironment {
+  const invalid: string[] = []
+  const supabaseUrl = environment.SUPABASE_URL
+  const supabaseSecretKey = readSupabaseSecret(environment)
+
+  if (!isHttpUrl(supabaseUrl)) invalid.push("SUPABASE_URL")
+  if (!supabaseSecretKey) {
+    invalid.push(
+      "SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEYS)",
+    )
+  }
+
+  if (invalid.length > 0 || !isHttpUrl(supabaseUrl) || !supabaseSecretKey) {
+    throw new ConfigurationError(invalid)
+  }
+
+  return { supabaseSecretKey, supabaseUrl }
 }
 
 /**

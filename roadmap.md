@@ -663,7 +663,7 @@ Establish durable, organization-isolated persistence.
 
 ## PP-013 — Add Supabase Queues and scheduled processing
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-006, PP-010
 
