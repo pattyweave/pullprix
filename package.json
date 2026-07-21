@@ -7,7 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:reset": "supabase db reset",
+    "supabase:functions": "supabase functions serve"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.9",
@@ -36,6 +41,7 @@
     "@vitejs/plugin-react": "^6.0.2",
     "jsdom": "^29.1.1",
     "oxlint": "^1.69.0",
+    "supabase": "^2.109.1",
     "tailwindcss": "^4.3.1",
     "typescript": "~6.0.2",
     "vite": "^8.1.0",

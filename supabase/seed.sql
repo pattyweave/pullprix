@@ -1,0 +1,2 @@
+-- PP-010 intentionally has no application schema or seed records.
+-- PP-012 will introduce the first tenant-aware migration and fixtures.
