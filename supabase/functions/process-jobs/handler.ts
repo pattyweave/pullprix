@@ -2,6 +2,7 @@ import type {
   BackgroundJob,
   BackgroundJobRepository,
 } from "./repository.ts"
+import { redactForLog } from "../_shared/redact.ts"
 
 type ProcessJobsDependencies = {
   repository: BackgroundJobRepository
@@ -35,6 +36,23 @@ function json(body: Record<string, unknown>, status: number) {
   })
 }
 
+function log(
+  level: "error" | "info",
+  event: string,
+  job?: BackgroundJob,
+) {
+  const entry = redactForLog({
+    event,
+    ...(job && {
+      attempt: job.attempt_count,
+      job_id: job.job_id,
+      job_type: job.job_type,
+    }),
+  })
+
+  console[level](JSON.stringify(entry))
+}
+
 export async function handleProcessJobsRequest(
   request: Request,
   dependencies: ProcessJobsDependencies,
@@ -63,16 +81,21 @@ export async function handleProcessJobsRequest(
     for (const job of jobs) {
       try {
         const result = await processJob(job)
-        if (await dependencies.repository.complete(job, result)) succeeded += 1
+        if (await dependencies.repository.complete(job, result)) {
+          succeeded += 1
+          log("info", "background_job_succeeded", job)
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown job error"
         await dependencies.repository.fail(job, message)
         failed += 1
+        log("error", "background_job_failed", job)
       }
     }
 
     return json({ claimed: jobs.length, failed, succeeded }, 200)
   } catch {
+    log("error", "background_job_batch_failed")
     return json({ error: "job_batch_failed" }, 500)
   }
 }

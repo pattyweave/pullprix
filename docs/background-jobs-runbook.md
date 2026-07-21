@@ -1,6 +1,6 @@
 # Background Jobs Runbook
 
-Roadmap ticket: `PP-013`
+Roadmap tickets: `PP-013`, `PP-014`
 
 Pull Prix uses one durable Supabase Queue named `pull_prix_jobs`. PostgreSQL
 stores the authoritative job record in `public.background_jobs`; the queue
@@ -74,6 +74,28 @@ order by failed_at desc;
 ```
 
 Job payloads and queue tables are not browser-readable.
+
+## Inspect function logs
+
+Use the Supabase `process-jobs` function log view and search for one of these
+events:
+
+- `background_job_failed`
+- `background_job_batch_failed`
+- `background_job_succeeded`
+
+Job events include only `job_id`, `job_type`, and attempt number. Search the
+failed-jobs query above for the same `job_id` to find its organization and
+concise stored error. Logs intentionally omit payloads, exception text, API
+responses, tokens, and secrets.
+
+GitHub delivery correlation will be added by PP-022 when delivery records
+exist. That ticket must preserve the delivery ID in its queued job identity or
+ledger fields; PP-014 does not create placeholder webhook data.
+
+For local inspection, run `npm run supabase:functions`, enqueue an unsupported
+test job, and invoke `process-jobs`. The JSON failure event appears directly in
+that terminal. No dashboard or external log service is part of the MVP.
 
 ## Replay one failed job
 

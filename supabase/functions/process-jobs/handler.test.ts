@@ -49,6 +49,7 @@ describe("process-jobs Edge Function", () => {
   })
 
   it("claims a bounded batch and completes a supported job", async () => {
+    const infoLog = vi.spyOn(console, "info").mockImplementation(() => undefined)
     const repository = createRepository([job])
     const response = await handleProcessJobsRequest(request(), {
       repository,
@@ -63,9 +64,19 @@ describe("process-jobs Edge Function", () => {
       failed: 0,
       succeeded: 1,
     })
+    expect(infoLog).toHaveBeenCalledWith(
+      JSON.stringify({
+        event: "background_job_succeeded",
+        attempt: 1,
+        job_id: "job-1",
+        job_type: "system.noop",
+      }),
+    )
+    infoLog.mockRestore()
   })
 
   it("returns unsupported work to the database retry policy", async () => {
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => undefined)
     const unsupportedJob = { ...job, job_type: "backfill.repository-page" }
     const repository = createRepository([unsupportedJob])
     const response = await handleProcessJobsRequest(request(), {
@@ -83,5 +94,36 @@ describe("process-jobs Edge Function", () => {
       failed: 1,
       succeeded: 0,
     })
+    expect(errorLog).toHaveBeenCalledWith(
+      JSON.stringify({
+        event: "background_job_failed",
+        attempt: 1,
+        job_id: "job-1",
+        job_type: "backfill.repository-page",
+      }),
+    )
+    expect(errorLog.mock.calls.flat().join(" ")).not.toContain("payload")
+    errorLog.mockRestore()
+  })
+
+  it("logs a safe batch failure without the exception or secret", async () => {
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => undefined)
+    const repository = createRepository([])
+    repository.claim.mockRejectedValue(
+      new Error("database rejected server-secret and private payload"),
+    )
+
+    const response = await handleProcessJobsRequest(request(), {
+      repository,
+      secretKey: "server-secret",
+    })
+
+    expect(response.status).toBe(500)
+    expect(errorLog).toHaveBeenCalledWith(
+      JSON.stringify({ event: "background_job_batch_failed" }),
+    )
+    expect(errorLog.mock.calls.flat().join(" ")).not.toContain("server-secret")
+    expect(errorLog.mock.calls.flat().join(" ")).not.toContain("private payload")
+    errorLog.mockRestore()
   })
 })

@@ -690,7 +690,7 @@ Supabase-native primitives.
 
 ## PP-014 — Add minimum failure visibility
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P1`
 - Dependencies: PP-010, PP-013
 
@@ -711,7 +711,8 @@ Make failures visible to the founder using provider logs and database state.
 
 - A forced Edge Function error is visible in Supabase logs.
 - A failed job is visible through a repeatable database query.
-- Logs can trace one GitHub delivery through processing.
+- Logs identify a background job through processing; PP-022 must carry its
+  GitHub delivery ID into that job correlation once deliveries exist.
 - Private customer payloads and secrets are not exposed in monitoring.
 - No paid monitoring vendor or operations dashboard is required.
 
