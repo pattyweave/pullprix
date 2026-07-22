@@ -722,7 +722,7 @@ Make failures visible to the founder using provider logs and database state.
 
 ## PP-020 — Register the private development GitHub App
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-006, PP-011
 

@@ -108,6 +108,9 @@ The MVP should not:
 
 ## GitHub App registration
 
+The completed development registration and reproducible settings are recorded
+in [`github-app-registration.md`](github-app-registration.md).
+
 Start private and install it only on a test organization.
 
 ### Initial repository permissions
