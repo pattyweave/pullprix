@@ -1,9 +1,20 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { handleGitHubWebhookRequest } from "./handler.ts"
+import type { GitHubDeliveryRepository } from "./repository.ts"
 
 const secret = "fixture-webhook-secret"
 const deliveryId = "72d3162e-cc78-11e3-81ab-4c9367dc0958"
+
+function repository(duplicate = false) {
+  return {
+    accept: vi.fn().mockResolvedValue({
+      delivery_id: "10000000-0000-0000-0000-000000000001",
+      delivery_status: "queued",
+      duplicate,
+    }),
+  } satisfies GitHubDeliveryRepository
+}
 
 async function signatureFor(body: string) {
   const key = await crypto.subtle.importKey(
@@ -48,8 +59,11 @@ async function requestFor(
 
 describe("GitHub webhook signature verification", () => {
   it("accepts a valid signature over the untouched request bytes", async () => {
-    const body = '{"action":"submitted","reviewer":"Renée"}'
+    const body =
+      '{"action":"submitted","installation":{"id":12345},"reviewer":"Renée"}'
+    const deliveryRepository = repository()
     const response = await handleGitHubWebhookRequest(await requestFor(body), {
+      repository: deliveryRepository,
       webhookSecret: secret,
     })
 
@@ -57,7 +71,19 @@ describe("GitHub webhook signature verification", () => {
     await expect(response.json()).resolves.toEqual({
       accepted: true,
       delivery_id: deliveryId,
+      duplicate: false,
       event: "pull_request_review",
+    })
+    expect(deliveryRepository.accept).toHaveBeenCalledWith({
+      action: "submitted",
+      eventName: "pull_request_review",
+      githubDeliveryId: deliveryId,
+      githubInstallationId: 12345,
+      payload: {
+        action: "submitted",
+        installation: { id: 12345 },
+        reviewer: "Renée",
+      },
     })
   })
 
@@ -67,6 +93,7 @@ describe("GitHub webhook signature verification", () => {
       "x-hub-signature-256": await signatureFor(originalBody),
     })
     const response = await handleGitHubWebhookRequest(request, {
+      repository: repository(),
       webhookSecret: secret,
     })
 
@@ -81,7 +108,7 @@ describe("GitHub webhook signature verification", () => {
     async (signature) => {
       const response = await handleGitHubWebhookRequest(
         await requestFor("{}", { "x-hub-signature-256": signature }),
-        { webhookSecret: secret },
+        { repository: repository(), webhookSecret: secret },
       )
 
       expect(response.status).toBe(401)
@@ -91,7 +118,7 @@ describe("GitHub webhook signature verification", () => {
   it("validates GitHub delivery metadata only after signature verification", async () => {
     const response = await handleGitHubWebhookRequest(
       await requestFor("{}", { "x-github-delivery": undefined }),
-      { webhookSecret: secret },
+      { repository: repository(), webhookSecret: secret },
     )
 
     expect(response.status).toBe(400)
@@ -100,12 +127,42 @@ describe("GitHub webhook signature verification", () => {
     })
   })
 
-  it("does not parse or trust JSON before accepting signed raw bytes", async () => {
+  it("rejects malformed JSON after verifying its signature", async () => {
+    const deliveryRepository = repository()
     const response = await handleGitHubWebhookRequest(
       await requestFor("this is intentionally not JSON"),
-      { webhookSecret: secret },
+      { repository: deliveryRepository, webhookSecret: secret },
+    )
+
+    expect(response.status).toBe(400)
+    expect(deliveryRepository.accept).not.toHaveBeenCalled()
+  })
+
+  it("acknowledges a redelivery without dispatching another effect", async () => {
+    const response = await handleGitHubWebhookRequest(
+      await requestFor('{"action":"submitted"}'),
+      { repository: repository(true), webhookSecret: secret },
     )
 
     expect(response.status).toBe(202)
+    await expect(response.json()).resolves.toMatchObject({
+      accepted: true,
+      duplicate: true,
+    })
+  })
+
+  it("does not expose database failures", async () => {
+    const deliveryRepository = {
+      accept: vi.fn().mockRejectedValue(new Error("sensitive database detail")),
+    }
+    const response = await handleGitHubWebhookRequest(
+      await requestFor("{}"),
+      { repository: deliveryRepository, webhookSecret: secret },
+    )
+
+    expect(response.status).toBe(500)
+    await expect(response.json()).resolves.toEqual({
+      error: "delivery_persistence_failed",
+    })
   })
 })

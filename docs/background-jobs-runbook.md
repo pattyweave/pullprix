@@ -1,6 +1,6 @@
 # Background Jobs Runbook
 
-Roadmap tickets: `PP-013`, `PP-014`
+Roadmap tickets: `PP-013`, `PP-014`, `PP-022`
 
 Pull Prix uses one durable Supabase Queue named `pull_prix_jobs`. PostgreSQL
 stores the authoritative job record in `public.background_jobs`; the queue
@@ -89,9 +89,30 @@ failed-jobs query above for the same `job_id` to find its organization and
 concise stored error. Logs intentionally omit payloads, exception text, API
 responses, tokens, and secrets.
 
-GitHub delivery correlation will be added by PP-022 when delivery records
-exist. That ticket must preserve the delivery ID in its queued job identity or
-ledger fields; PP-014 does not create placeholder webhook data.
+GitHub webhook jobs use `github-delivery:GITHUB_DELIVERY_ID` as their stable
+idempotency key. Inspect a delivery and its linked job without exposing payloads
+to browser clients:
+
+```sql
+select
+  delivery.github_delivery_id,
+  delivery.event_name,
+  delivery.action,
+  delivery.github_installation_id,
+  delivery.status,
+  delivery.attempt_count,
+  delivery.last_error,
+  delivery.received_at,
+  delivery.processed_at,
+  delivery.background_job_id
+from public.webhook_deliveries delivery
+order by delivery.received_at desc;
+```
+
+The delivery row automatically follows its linked job through queued,
+processing, processed, and failed states. Raw payloads remain available in the
+protected SQL editor for founder debugging and later event processing, but are
+never browser-readable.
 
 For local inspection, run `npm run supabase:functions`, enqueue an unsupported
 test job, and invoke `process-jobs`. The JSON failure event appears directly in
@@ -109,3 +130,10 @@ Replay is accepted only for a failed job. It creates a new queue message while
 preserving the original job ID and idempotency key. This makes downstream
 handlers responsible for one stable job identity across retries and founder
 replays.
+
+For a failed GitHub delivery, replay by GitHub's delivery ID instead. This
+reuses both the delivery and background-job identities:
+
+```sql
+select * from public.replay_webhook_delivery('GITHUB_DELIVERY_ID');
+```

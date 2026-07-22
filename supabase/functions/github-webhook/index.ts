@@ -1,10 +1,21 @@
-import { readGithubWebhookEnvironment } from "../_shared/environment.ts"
+import {
+  readGithubWebhookEnvironment,
+  readSupabaseServiceEnvironment,
+} from "../_shared/environment.ts"
 import { handleGitHubWebhookRequest } from "./handler.ts"
+import { createGitHubDeliveryRepository } from "./repository.ts"
 
-const environment = readGithubWebhookEnvironment(Deno.env.toObject())
+const variables = Deno.env.toObject()
+const webhookEnvironment = readGithubWebhookEnvironment(variables)
+const supabaseEnvironment = readSupabaseServiceEnvironment(variables)
+const repository = createGitHubDeliveryRepository(
+  supabaseEnvironment.supabaseUrl,
+  supabaseEnvironment.supabaseSecretKey,
+)
 
 Deno.serve((request) =>
   handleGitHubWebhookRequest(request, {
-    webhookSecret: environment.githubWebhookSecret,
+    repository,
+    webhookSecret: webhookEnvironment.githubWebhookSecret,
   }),
 )

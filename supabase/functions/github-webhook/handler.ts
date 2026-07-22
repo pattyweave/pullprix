@@ -1,6 +1,8 @@
 import { verifyGitHubWebhookSignature } from "./signature.ts"
+import type { GitHubDeliveryRepository } from "./repository.ts"
 
 type GitHubWebhookDependencies = {
+  repository: GitHubDeliveryRepository
   webhookSecret: string
 }
 
@@ -46,14 +48,49 @@ export async function handleGitHubWebhookRequest(
     return json({ error: "invalid_github_headers" }, 400)
   }
 
-  // PP-022 will persist and deduplicate these verified raw bytes before any
-  // event-specific JSON parsing or asynchronous processing occurs.
-  return json(
-    {
-      accepted: true,
-      delivery_id: deliveryId,
-      event: eventName,
-    },
-    202,
-  )
+  let payload: Record<string, unknown>
+  try {
+    const parsed = JSON.parse(new TextDecoder().decode(rawBody)) as unknown
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return json({ error: "invalid_json_payload" }, 400)
+    }
+    payload = parsed as Record<string, unknown>
+  } catch {
+    return json({ error: "invalid_json_payload" }, 400)
+  }
+
+  const action = typeof payload.action === "string" ? payload.action : null
+  const installation = payload.installation
+  const rawInstallationId =
+    installation && typeof installation === "object" && !Array.isArray(installation)
+      ? (installation as Record<string, unknown>).id
+      : null
+  const installationId =
+    typeof rawInstallationId === "number" &&
+      Number.isSafeInteger(rawInstallationId) &&
+      rawInstallationId > 0
+      ? rawInstallationId
+      : null
+
+  try {
+    const accepted = await dependencies.repository.accept({
+      action,
+      eventName,
+      githubDeliveryId: deliveryId,
+      githubInstallationId: installationId,
+      payload,
+    })
+
+    return json(
+      {
+        accepted: true,
+        delivery_id: deliveryId,
+        duplicate: accepted.duplicate,
+        event: eventName,
+      },
+      202,
+    )
+  } catch {
+    return json({ error: "delivery_persistence_failed" }, 500)
+  }
 }
