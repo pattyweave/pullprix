@@ -36,15 +36,15 @@ repositories.
 
 ## Webhook subscriptions
 
-GitHub Apps receive `installation` lifecycle events by default. Once PP-022 and
-PP-023 are deployed, enable webhook delivery and verify `installation_target`
-rename delivery is available for the app.
+GitHub Apps receive `installation` and `installation_repositories` lifecycle
+events by default. Once PP-022 through PP-024 are deployed, enable webhook
+delivery, verify `installation_target` rename delivery is available, and
+subscribe to `repository` for repository creation, rename, and transfer events.
 
 Do not subscribe to the remaining product events until their processors land:
 
-- `installation_repositories` — PP-024.
-- `pull_request` — PP-025.
-- `pull_request_review` — PP-026.
+- `pull_request` — PP-030.
+- `pull_request_review` — PP-031.
 
 `pull_request_review_comment` remains deferred with PP-033 because the
 concierge scoring policy does not score raw diff-comment volume.

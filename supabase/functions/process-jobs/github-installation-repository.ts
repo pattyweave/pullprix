@@ -4,6 +4,7 @@ import type {
   InstallationLifecycleResult,
   StoredGitHubDelivery,
 } from "./github-installation.ts"
+import type { GitHubRepositoryChange } from "./github-repository.ts"
 
 type Fetch = typeof fetch
 
@@ -56,6 +57,27 @@ export function createGitHubInstallationRepository(
       }
 
       return (await response.json()) as boolean
+    },
+
+    async applyRepositories(change: GitHubRepositoryChange) {
+      const response = await fetchImplementation(
+        `${supabaseUrl}/rest/v1/rpc/apply_github_repository_changes`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            p_event_at: change.eventAt,
+            p_github_installation_id: change.githubInstallationId,
+            p_repositories: change.repositories,
+            p_repository_selection: change.repositorySelection,
+          }),
+        },
+      )
+      if (!response.ok) {
+        throw new Error(`Repository changes apply failed with status ${response.status}`)
+      }
+
+      return (await response.json()) as number
     },
 
     async apply(change: InstallationLifecycleChange) {

@@ -131,6 +131,7 @@ permissions only when a specific, approved product capability requires them.
 - `installation`
 - `installation_target`
 - `installation_repositories`
+- `repository`
 - `pull_request`
 - `pull_request_review`
 - `pull_request_review_comment`

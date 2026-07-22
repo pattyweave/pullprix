@@ -1,6 +1,6 @@
 # Background Jobs Runbook
 
-Roadmap tickets: `PP-013`, `PP-014`, `PP-022`, `PP-023`
+Roadmap tickets: `PP-013`, `PP-014`, `PP-022`, `PP-023`, `PP-024`
 
 Pull Prix uses one durable Supabase Queue named `pull_prix_jobs`. PostgreSQL
 stores the authoritative job record in `public.background_jobs`; the queue
@@ -159,3 +159,31 @@ Only `active` installations may perform later ingestion or GitHub API work.
 Suspended and deleted installations remain as tombstones so delayed deliveries
 cannot reactivate them. PP-081 owns permanent customer-data deletion; PP-023
 only enters that workflow by recording the deleted state.
+
+## Inspect repository eligibility
+
+Repository access is event-derived and requires no team configuration:
+
+```sql
+select
+  installation.github_installation_id,
+  installation.repository_selection,
+  repository.github_repository_id,
+  repository.full_name,
+  repository.active,
+  repository.access_updated_at
+from public.repositories repository
+join public.github_installations installation
+  on installation.id = repository.installation_id
+order by repository.updated_at desc;
+```
+
+Only active repositories under an active installation are eligible for new
+ingestion and backfill. Removal and transfer deactivate a row instead of
+deleting it, preserving historical team records. If a transferred repository
+is later granted to another installation, that installation receives its own
+row; data is never moved between organizations.
+
+For an `all` installation, repository-created events add newly created
+repositories. PP-025's installation-token work will provide the API access used
+by later backfill and reconciliation tickets; PP-024 makes no GitHub API calls.

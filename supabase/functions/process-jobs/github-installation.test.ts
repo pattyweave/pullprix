@@ -35,6 +35,7 @@ function repository(
   storedDelivery: StoredGitHubDelivery,
 ): GitHubInstallationRepository & {
   apply: ReturnType<typeof vi.fn>
+  applyRepositories: ReturnType<typeof vi.fn>
   isActive: ReturnType<typeof vi.fn>
 } {
   return {
@@ -44,6 +45,7 @@ function repository(
       installation_status: "active",
       organization_id: "organization-1",
     }),
+    applyRepositories: vi.fn().mockResolvedValue(0),
     getDelivery: vi.fn().mockResolvedValue(storedDelivery),
     isActive: vi.fn().mockResolvedValue(true),
   }
@@ -82,6 +84,45 @@ describe("GitHub installation lifecycle processor", () => {
     expect(lifecycleRepository.apply).toHaveBeenCalledWith(
       expect.objectContaining({ action: "created", githubInstallationId: 12345 }),
     )
+    expect(lifecycleRepository.applyRepositories).toHaveBeenCalledWith(
+      expect.objectContaining({
+        githubInstallationId: 12345,
+        repositorySelection: "selected",
+      }),
+    )
+  })
+
+  it("applies repository access events for an active installation", async () => {
+    const lifecycleRepository = repository({
+      action: "added",
+      event_name: "installation_repositories",
+      github_installation_id: 12345,
+      id: "delivery-repositories-added",
+      payload: {
+        installation: { id: 12345, updated_at: "2026-07-21T12:00:00Z" },
+        repositories_added: [{
+          id: 1002,
+          name: "web",
+          full_name: "pull-prix-sandbox/web",
+          private: true,
+        }],
+        repositories_removed: [],
+        repository_selection: "selected",
+      },
+    })
+    lifecycleRepository.applyRepositories.mockResolvedValue(1)
+    const processor = createGitHubInstallationProcessor(lifecycleRepository)
+
+    await expect(processor("delivery-repositories-added")).resolves.toEqual({
+      disposition: "applied",
+      repositories_applied: 1,
+    })
+    expect(lifecycleRepository.isActive).toHaveBeenCalledWith(12345)
+    expect(lifecycleRepository.applyRepositories).toHaveBeenCalledWith(
+      expect.objectContaining({
+        repositories: [expect.objectContaining({ active: true })],
+      }),
+    )
   })
 
   it("ignores non-lifecycle work after an installation stops", async () => {
@@ -100,6 +141,7 @@ describe("GitHub installation lifecycle processor", () => {
       reason: "installation_inactive",
     })
     expect(lifecycleRepository.apply).not.toHaveBeenCalled()
+    expect(lifecycleRepository.applyRepositories).not.toHaveBeenCalled()
   })
 
   it("leaves future active event types available for their own ticket", async () => {
@@ -115,6 +157,22 @@ describe("GitHub installation lifecycle processor", () => {
     await expect(processor("delivery-review")).rejects.toThrow(
       "No installation lifecycle processor for pull_request_review.submitted",
     )
+  })
+
+  it("ignores repository actions unrelated to access or identity", async () => {
+    const lifecycleRepository = repository({
+      action: "archived",
+      event_name: "repository",
+      github_installation_id: 12345,
+      id: "delivery-repository-archived",
+      payload: { installation: { id: 12345 } },
+    })
+    const processor = createGitHubInstallationProcessor(lifecycleRepository)
+
+    await expect(processor("delivery-repository-archived")).resolves.toEqual({
+      disposition: "ignored",
+      reason: "repository_action_not_relevant",
+    })
   })
 
   it("rejects malformed lifecycle payloads", () => {

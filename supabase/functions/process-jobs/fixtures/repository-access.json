@@ -1,0 +1,91 @@
+[
+  {
+    "name": "initial selected repositories",
+    "event_name": "installation",
+    "action": "created",
+    "payload": {
+      "installation": {
+        "id": 12345,
+        "repository_selection": "selected",
+        "updated_at": "2026-07-20T12:00:00Z"
+      },
+      "repositories": [
+        { "id": 1001, "name": "api", "full_name": "pull-prix-sandbox/api", "private": true }
+      ]
+    }
+  },
+  {
+    "name": "repositories added",
+    "event_name": "installation_repositories",
+    "action": "added",
+    "payload": {
+      "installation": { "id": 12345, "updated_at": "2026-07-21T12:00:00Z" },
+      "repository_selection": "selected",
+      "repositories_added": [
+        { "id": 1002, "name": "web", "full_name": "pull-prix-sandbox/web", "private": true }
+      ],
+      "repositories_removed": []
+    }
+  },
+  {
+    "name": "repositories removed",
+    "event_name": "installation_repositories",
+    "action": "removed",
+    "payload": {
+      "installation": { "id": 12345, "updated_at": "2026-07-22T12:00:00Z" },
+      "repository_selection": "selected",
+      "repositories_added": [],
+      "repositories_removed": [
+        { "id": 1001, "name": "api", "full_name": "pull-prix-sandbox/api", "private": true }
+      ]
+    }
+  },
+  {
+    "name": "repository renamed",
+    "event_name": "repository",
+    "action": "renamed",
+    "payload": {
+      "installation": { "id": 12345 },
+      "repository": {
+        "id": 1002,
+        "name": "frontend",
+        "full_name": "pull-prix-sandbox/frontend",
+        "owner": { "login": "pull-prix-sandbox" },
+        "private": true,
+        "updated_at": "2026-07-23T12:00:00Z"
+      }
+    }
+  },
+  {
+    "name": "repository transferred",
+    "event_name": "repository",
+    "action": "transferred",
+    "payload": {
+      "installation": { "id": 12345 },
+      "repository": {
+        "id": 1002,
+        "name": "frontend",
+        "full_name": "new-owner/frontend",
+        "owner": { "login": "new-owner" },
+        "private": true,
+        "updated_at": "2026-07-24T12:00:00Z"
+      }
+    }
+  },
+  {
+    "name": "repository created for all access",
+    "event_name": "repository",
+    "action": "created",
+    "payload": {
+      "installation": { "id": 12345 },
+      "repository": {
+        "id": 1003,
+        "name": "worker",
+        "full_name": "pull-prix-sandbox/worker",
+        "owner": { "login": "pull-prix-sandbox" },
+        "private": true,
+        "updated_at": "2026-07-25T12:00:00Z"
+      }
+    }
+  }
+]

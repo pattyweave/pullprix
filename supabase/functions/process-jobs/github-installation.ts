@@ -32,6 +32,7 @@ export type InstallationLifecycleResult = {
 
 export interface GitHubInstallationRepository {
   apply(change: InstallationLifecycleChange): Promise<InstallationLifecycleResult>
+  applyRepositories(change: GitHubRepositoryChange): Promise<number>
   getDelivery(deliveryId: string): Promise<StoredGitHubDelivery>
   isActive(githubInstallationId: number): Promise<boolean>
 }
@@ -126,27 +127,58 @@ export function createGitHubInstallationProcessor(
     const isLifecycleEvent =
       delivery.event_name === "installation" ||
       delivery.event_name === "installation_target"
-    let change: InstallationLifecycleChange | null
-    try {
-      change = normalizeInstallationLifecycle(delivery)
-    } catch (error) {
-      if (
-        !isLifecycleEvent &&
-        delivery.github_installation_id &&
-        !(await repository.isActive(delivery.github_installation_id))
-      ) {
+    if (isLifecycleEvent) {
+      const change = normalizeInstallationLifecycle(delivery)
+      if (!change) return { disposition: "ignored", event: delivery.event_name }
+
+      const result = await repository.apply(change)
+      const repositoryChange = normalizeRepositoryChanges(delivery)
+      const repositoriesApplied = repositoryChange
+        ? await repository.applyRepositories(repositoryChange)
+        : 0
+
+      return {
+        disposition: result.disposition,
+        installation_id: result.installation_id,
+        installation_status: result.installation_status,
+        organization_id: result.organization_id,
+        repositories_applied: repositoriesApplied,
+      }
+    }
+
+    if (isRepositoryAccessEvent(delivery)) {
+      const change = normalizeRepositoryChanges(delivery)!
+      if (!(await repository.isActive(change.githubInstallationId))) {
         return { disposition: "ignored", reason: "installation_inactive" }
       }
-      throw error
-    }
-    if (!change) return { disposition: "ignored", event: delivery.event_name }
 
-    const result = await repository.apply(change)
-    return {
-      disposition: result.disposition,
-      installation_id: result.installation_id,
-      installation_status: result.installation_status,
-      organization_id: result.organization_id,
+      return {
+        disposition: "applied",
+        repositories_applied: await repository.applyRepositories(change),
+      }
     }
+
+    if (
+      delivery.github_installation_id &&
+      !(await repository.isActive(delivery.github_installation_id))
+    ) {
+      return { disposition: "ignored", reason: "installation_inactive" }
+    }
+
+    if (delivery.event_name === "repository") {
+      return {
+        disposition: "ignored",
+        reason: "repository_action_not_relevant",
+      }
+    }
+
+    throw new Error(
+      `No installation lifecycle processor for ${delivery.event_name}.${delivery.action ?? "missing"}`,
+    )
   }
 }
+import {
+  isRepositoryAccessEvent,
+  normalizeRepositoryChanges,
+} from "./github-repository.ts"
+import type { GitHubRepositoryChange } from "./github-repository.ts"

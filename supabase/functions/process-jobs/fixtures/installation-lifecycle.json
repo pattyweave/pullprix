@@ -9,9 +9,11 @@
         "id": 12345,
         "account": { "id": 9876, "login": "pull-prix-sandbox", "type": "Organization" },
         "created_at": "2026-07-20T12:00:00Z",
+        "repository_selection": "selected",
         "updated_at": "2026-07-20T12:00:00Z",
         "suspended_at": null
-      }
+      },
+      "repositories": []
     }
   },
   {

@@ -66,4 +66,34 @@ describe("GitHub installation repository", () => {
       "content-type": "application/json",
     })
   })
+
+  it("applies normalized repository changes through one RPC", async () => {
+    const fetchImplementation = vi.fn().mockResolvedValue(
+      Response.json(1),
+    ) as unknown as typeof fetch
+    const repository = createGitHubInstallationRepository(
+      "https://example.supabase.co",
+      "sb_secret_hosted",
+      fetchImplementation,
+    )
+
+    await expect(repository.applyRepositories({
+      eventAt: "2026-07-21T12:00:00Z",
+      githubInstallationId: 12345,
+      repositories: [{
+        active: true,
+        full_name: "pull-prix-sandbox/web",
+        github_repository_id: 1002,
+        name: "web",
+        owner: "pull-prix-sandbox",
+        private: true,
+      }],
+      repositorySelection: "selected",
+    })).resolves.toBe(1)
+
+    expect(fetchImplementation).toHaveBeenCalledWith(
+      "https://example.supabase.co/rest/v1/rpc/apply_github_repository_changes",
+      expect.objectContaining({ method: "POST" }),
+    )
+  })
 })

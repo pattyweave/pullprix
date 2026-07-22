@@ -821,7 +821,7 @@ Keep Pull Prix organization access synchronized with GitHub.
 
 ## PP-024 — Handle repository access lifecycle
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-012, PP-022, PP-023
 
