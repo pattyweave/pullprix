@@ -747,7 +747,7 @@ Create a private GitHub App for development and test-organization installation.
 
 ## PP-021 — Implement GitHub webhook signature verification
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-010, PP-011
 

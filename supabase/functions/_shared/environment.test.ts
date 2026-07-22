@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   ConfigurationError,
+  readGithubWebhookEnvironment,
   readServerEnvironment,
 } from "./environment.ts"
 
@@ -85,5 +86,17 @@ describe("server environment", () => {
     expect(String(error)).toContain("SUPABASE_SECRET_KEY")
     expect(String(error)).not.toContain("private-bad-url")
     expect(String(error)).not.toContain("private-bad-key")
+  })
+
+  it("validates only the secret required by the public webhook", () => {
+    expect(
+      readGithubWebhookEnvironment({
+        GITHUB_WEBHOOK_SECRET: " webhook-value ",
+      }),
+    ).toEqual({ githubWebhookSecret: "webhook-value" })
+
+    expect(() => readGithubWebhookEnvironment({})).toThrowError(
+      new ConfigurationError(["GITHUB_WEBHOOK_SECRET"]),
+    )
   })
 })

@@ -17,7 +17,8 @@ the concierge MVP. It contains no credential values.
 - Callback URL: not configured; user authorization is not part of PP-020.
 - Setup URL: not configured; the installation return flow belongs to its
   implementation ticket.
-- Webhook delivery: disabled until PP-021 deploys signature verification.
+- Webhook delivery: disabled until PP-022 persists verified deliveries and the
+  endpoint is deployed.
 
 ## Minimum permissions
 
@@ -35,7 +36,7 @@ repositories.
 
 ## Webhook subscriptions
 
-Enable these when the PP-021 endpoint is ready:
+Enable these when the PP-022 persistence endpoint is ready:
 
 - `installation`
 - `installation_repositories`

@@ -68,6 +68,16 @@ export type SupabaseServiceEnvironment = {
   supabaseUrl: string
 }
 
+export function readGithubWebhookEnvironment(environment: Environment) {
+  const githubWebhookSecret = environment.GITHUB_WEBHOOK_SECRET?.trim()
+
+  if (!githubWebhookSecret) {
+    throw new ConfigurationError(["GITHUB_WEBHOOK_SECRET"])
+  }
+
+  return { githubWebhookSecret }
+}
+
 export function readSupabaseServiceEnvironment(
   environment: Environment,
 ): SupabaseServiceEnvironment {
