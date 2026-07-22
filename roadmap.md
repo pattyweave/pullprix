@@ -796,7 +796,7 @@ Guarantee that GitHub redelivery does not duplicate product effects.
 
 ## PP-023 — Handle installation lifecycle events
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-012, PP-022
 

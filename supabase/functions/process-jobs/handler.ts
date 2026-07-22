@@ -5,6 +5,7 @@ import type {
 import { redactForLog } from "../_shared/redact.ts"
 
 type ProcessJobsDependencies = {
+  processGitHubDelivery: (deliveryId: string) => Promise<Record<string, unknown>>
   repository: BackgroundJobRepository
   secretKey: string
 }
@@ -21,9 +22,20 @@ function constantTimeEqual(left: string, right: string) {
   return difference === 0
 }
 
-async function processJob(job: BackgroundJob) {
+async function processJob(
+  job: BackgroundJob,
+  dependencies: ProcessJobsDependencies,
+) {
   if (job.job_type === "system.noop") {
     return { processed: true }
+  }
+
+  if (job.job_type === "github.delivery") {
+    const deliveryId = job.payload.delivery_id
+    if (typeof deliveryId !== "string" || !deliveryId) {
+      throw new Error("GitHub delivery job is missing delivery_id")
+    }
+    return dependencies.processGitHubDelivery(deliveryId)
   }
 
   throw new Error(`No processor registered for job type ${job.job_type}`)
@@ -80,7 +92,7 @@ export async function handleProcessJobsRequest(
 
     for (const job of jobs) {
       try {
-        const result = await processJob(job)
+        const result = await processJob(job, dependencies)
         if (await dependencies.repository.complete(job, result)) {
           succeeded += 1
           log("info", "background_job_succeeded", job)

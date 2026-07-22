@@ -36,10 +36,13 @@ function request(apiKey = "server-secret") {
   })
 }
 
+const processGitHubDelivery = vi.fn().mockResolvedValue({ disposition: "applied" })
+
 describe("process-jobs Edge Function", () => {
   it("rejects requests without the server secret", async () => {
     const repository = createRepository([])
     const response = await handleProcessJobsRequest(request("wrong-key"), {
+      processGitHubDelivery,
       repository,
       secretKey: "server-secret",
     })
@@ -52,6 +55,7 @@ describe("process-jobs Edge Function", () => {
     const infoLog = vi.spyOn(console, "info").mockImplementation(() => undefined)
     const repository = createRepository([job])
     const response = await handleProcessJobsRequest(request(), {
+      processGitHubDelivery,
       repository,
       secretKey: "server-secret",
     })
@@ -80,6 +84,7 @@ describe("process-jobs Edge Function", () => {
     const unsupportedJob = { ...job, job_type: "backfill.repository-page" }
     const repository = createRepository([unsupportedJob])
     const response = await handleProcessJobsRequest(request(), {
+      processGitHubDelivery,
       repository,
       secretKey: "server-secret",
     })
@@ -114,6 +119,7 @@ describe("process-jobs Edge Function", () => {
     )
 
     const response = await handleProcessJobsRequest(request(), {
+      processGitHubDelivery,
       repository,
       secretKey: "server-secret",
     })
@@ -125,5 +131,32 @@ describe("process-jobs Edge Function", () => {
     expect(errorLog.mock.calls.flat().join(" ")).not.toContain("server-secret")
     expect(errorLog.mock.calls.flat().join(" ")).not.toContain("private payload")
     errorLog.mockRestore()
+  })
+
+  it("routes a GitHub delivery job to its lifecycle processor", async () => {
+    const infoLog = vi.spyOn(console, "info").mockImplementation(() => undefined)
+    const repository = createRepository([{
+      ...job,
+      job_type: "github.delivery",
+      payload: { delivery_id: "delivery-1" },
+    }])
+    const lifecycleProcessor = vi.fn().mockResolvedValue({
+      disposition: "applied",
+      installation_status: "active",
+    })
+
+    const response = await handleProcessJobsRequest(request(), {
+      processGitHubDelivery: lifecycleProcessor,
+      repository,
+      secretKey: "server-secret",
+    })
+
+    expect(lifecycleProcessor).toHaveBeenCalledWith("delivery-1")
+    expect(repository.complete).toHaveBeenCalledWith(
+      expect.objectContaining({ job_type: "github.delivery" }),
+      { disposition: "applied", installation_status: "active" },
+    )
+    await expect(response.json()).resolves.toMatchObject({ succeeded: 1 })
+    infoLog.mockRestore()
   })
 })

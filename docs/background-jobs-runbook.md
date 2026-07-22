@@ -1,6 +1,6 @@
 # Background Jobs Runbook
 
-Roadmap tickets: `PP-013`, `PP-014`, `PP-022`
+Roadmap tickets: `PP-013`, `PP-014`, `PP-022`, `PP-023`
 
 Pull Prix uses one durable Supabase Queue named `pull_prix_jobs`. PostgreSQL
 stores the authoritative job record in `public.background_jobs`; the queue
@@ -137,3 +137,25 @@ reuses both the delivery and background-job identities:
 ```sql
 select * from public.replay_webhook_delivery('GITHUB_DELIVERY_ID');
 ```
+
+## Inspect installation access
+
+Installation lifecycle processing recognizes created, new-permissions,
+suspend, unsuspend, delete, and account-rename events. GitHub's installation
+`updated_at` value prevents an older delivery from replacing newer state.
+
+```sql
+select
+  github_installation_id,
+  account_login,
+  status,
+  last_lifecycle_action,
+  github_updated_at
+from public.github_installations
+order by updated_at desc;
+```
+
+Only `active` installations may perform later ingestion or GitHub API work.
+Suspended and deleted installations remain as tombstones so delayed deliveries
+cannot reactivate them. PP-081 owns permanent customer-data deletion; PP-023
+only enters that workflow by recording the deleted state.

@@ -129,6 +129,7 @@ permissions only when a specific, approved product capability requires them.
 ### Initial webhook subscriptions
 
 - `installation`
+- `installation_target`
 - `installation_repositories`
 - `pull_request`
 - `pull_request_review`

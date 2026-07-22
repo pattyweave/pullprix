@@ -17,8 +17,8 @@ the concierge MVP. It contains no credential values.
 - Callback URL: not configured; user authorization is not part of PP-020.
 - Setup URL: not configured; the installation return flow belongs to its
   implementation ticket.
-- Webhook delivery: disabled until PP-022 persists verified deliveries and the
-  endpoint is deployed.
+- Webhook delivery: disabled until the PP-022 endpoint and PP-023 installation
+  processor are deployed.
 
 ## Minimum permissions
 
@@ -36,12 +36,15 @@ repositories.
 
 ## Webhook subscriptions
 
-Enable these when the PP-022 persistence endpoint is ready:
+GitHub Apps receive `installation` lifecycle events by default. Once PP-022 and
+PP-023 are deployed, enable webhook delivery and verify `installation_target`
+rename delivery is available for the app.
 
-- `installation`
-- `installation_repositories`
-- `pull_request`
-- `pull_request_review`
+Do not subscribe to the remaining product events until their processors land:
+
+- `installation_repositories` — PP-024.
+- `pull_request` — PP-025.
+- `pull_request_review` — PP-026.
 
 `pull_request_review_comment` remains deferred with PP-033 because the
 concierge scoring policy does not score raw diff-comment volume.
