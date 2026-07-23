@@ -846,7 +846,7 @@ Track which repositories each installation currently authorizes.
 
 ## PP-025 — Implement installation-token authentication
 
-- Status: `BACKLOG`
+- Status: `IN PROGRESS` — implementation complete; sandbox verification awaits development key rotation
 - Priority: `P0`
 - Dependencies: PP-011, PP-020, PP-023
 

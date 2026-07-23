@@ -68,6 +68,51 @@ export type SupabaseServiceEnvironment = {
   supabaseUrl: string
 }
 
+export type GitHubApiEnvironment = SupabaseServiceEnvironment & {
+  githubAppId: string
+  githubPrivateKey: string
+}
+
+export function readGitHubApiEnvironment(
+  environment: Environment,
+): GitHubApiEnvironment {
+  const invalid: string[] = []
+  const githubAppId = environment.GITHUB_APP_ID
+  const githubPrivateKey = normalizePrivateKey(
+    environment.GITHUB_APP_PRIVATE_KEY,
+  )
+  const supabaseUrl = environment.SUPABASE_URL
+  const supabaseSecretKey = readSupabaseSecret(environment)
+
+  if (!githubAppId || !/^\d+$/.test(githubAppId) || githubAppId === "0") {
+    invalid.push("GITHUB_APP_ID")
+  }
+  if (!isPrivateKey(githubPrivateKey)) invalid.push("GITHUB_APP_PRIVATE_KEY")
+  if (!isHttpUrl(supabaseUrl)) invalid.push("SUPABASE_URL")
+  if (!supabaseSecretKey) {
+    invalid.push(
+      "SUPABASE_SECRET_KEY (or SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SECRET_KEYS)",
+    )
+  }
+
+  if (
+    invalid.length > 0 ||
+    !githubAppId ||
+    !githubPrivateKey ||
+    !isHttpUrl(supabaseUrl) ||
+    !supabaseSecretKey
+  ) {
+    throw new ConfigurationError(invalid)
+  }
+
+  return {
+    githubAppId,
+    githubPrivateKey,
+    supabaseSecretKey,
+    supabaseUrl,
+  }
+}
+
 export function readGithubWebhookEnvironment(environment: Environment) {
   const githubWebhookSecret = environment.GITHUB_WEBHOOK_SECRET?.trim()
 

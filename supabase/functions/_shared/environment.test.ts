@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   ConfigurationError,
+  readGitHubApiEnvironment,
   readGithubWebhookEnvironment,
   readServerEnvironment,
 } from "./environment.ts"
@@ -98,5 +99,15 @@ describe("server environment", () => {
     expect(() => readGithubWebhookEnvironment({})).toThrowError(
       new ConfigurationError(["GITHUB_WEBHOOK_SECRET"]),
     )
+  })
+
+  it("validates only app authentication and database values for GitHub API work", () => {
+    expect(readGitHubApiEnvironment(validEnvironment)).toEqual({
+      githubAppId: "123456",
+      githubPrivateKey:
+        "-----BEGIN RSA PRIVATE KEY-----\nprivate-material\n-----END RSA PRIVATE KEY-----",
+      supabaseSecretKey: "server-value",
+      supabaseUrl: "https://example.supabase.co",
+    })
   })
 })
