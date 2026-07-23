@@ -53,6 +53,11 @@ function repository(
       contribution_id: "contribution-1",
       disposition: "inserted",
     }),
+    applyReviewComment: vi.fn().mockResolvedValue({
+      contribution_id: "comment-contribution-1",
+      disposition: "inserted",
+      scoring_recalculation_requested_at: "2026-07-20T14:00:00Z",
+    }),
     applyReviewDismissal: vi.fn().mockResolvedValue({
       contribution_id: "contribution-1",
       disposition: "dismissed",
@@ -214,6 +219,32 @@ describe("GitHub installation lifecycle processor", () => {
       expect.objectContaining({
         dismissal: expect.objectContaining({
           source_github_id: 5001,
+        }),
+      }),
+    )
+  })
+
+  it("applies a normalized review comment", async () => {
+    const fixture = (JSON.parse(
+      readFileSync(
+        new URL("./fixtures/review-comments.json", import.meta.url),
+        "utf8",
+      ),
+    ) as Fixture[])[0]!
+    const lifecycleRepository = repository(delivery(fixture))
+    const processor = createGitHubInstallationProcessor(lifecycleRepository)
+
+    await expect(processor("delivery-comment")).resolves.toEqual({
+      contribution_id: "comment-contribution-1",
+      disposition: "inserted",
+      scoring_recalculation_requested_at: "2026-07-20T14:00:00Z",
+    })
+    expect(lifecycleRepository.applyReviewComment).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "created",
+        comment: expect.objectContaining({
+          linked_review_github_id: 5001,
+          source_github_id: 6001,
         }),
       }),
     )

@@ -12,6 +12,14 @@ import {
 } from "./github-repository.ts"
 import type { GitHubRepositoryChange } from "./github-repository.ts"
 import {
+  isReviewCommentEvent,
+  normalizeReviewComment,
+} from "./github-review-comment.ts"
+import type {
+  GitHubReviewCommentChange,
+  GitHubReviewCommentResult,
+} from "./github-review-comment.ts"
+import {
   isReviewContributionEvent,
   isReviewDismissalEvent,
   normalizeReviewContribution,
@@ -65,6 +73,9 @@ export interface GitHubInstallationRepository {
   applyReviewContribution(
     change: GitHubReviewContributionChange,
   ): Promise<GitHubReviewContributionResult>
+  applyReviewComment(
+    change: GitHubReviewCommentChange,
+  ): Promise<GitHubReviewCommentResult>
   applyReviewDismissal(
     change: GitHubReviewDismissalChange,
   ): Promise<GitHubReviewDismissalResult>
@@ -222,6 +233,16 @@ export function createGitHubInstallationProcessor(
       return repository.applyReviewDismissal(change)
     }
 
+    if (isReviewCommentEvent(delivery)) {
+      const change = await normalizeReviewComment(delivery)
+      if (!change) throw new Error("GitHub review comment was not normalized")
+      if (!(await repository.isActive(change.githubInstallationId))) {
+        return { disposition: "ignored", reason: "installation_inactive" }
+      }
+
+      return repository.applyReviewComment(change)
+    }
+
     if (
       delivery.github_installation_id &&
       !(await repository.isActive(delivery.github_installation_id))
@@ -247,6 +268,13 @@ export function createGitHubInstallationProcessor(
       return {
         disposition: "ignored",
         reason: "review_action_not_relevant",
+      }
+    }
+
+    if (delivery.event_name === "pull_request_review_comment") {
+      return {
+        disposition: "ignored",
+        reason: "review_comment_action_not_relevant",
       }
     }
 

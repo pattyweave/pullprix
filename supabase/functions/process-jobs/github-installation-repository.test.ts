@@ -232,4 +232,57 @@ describe("GitHub installation repository", () => {
       }),
     )
   })
+
+  it("applies a canonical review comment through one RPC", async () => {
+    const fetchImplementation = vi.fn().mockResolvedValue(Response.json([{
+      contribution_id: "comment-contribution-1",
+      disposition: "inserted",
+      scoring_recalculation_requested_at: "2026-07-20T14:00:00Z",
+    }])) as unknown as typeof fetch
+    const repository = createGitHubInstallationRepository(
+      "https://example.supabase.co",
+      "sb_secret_hosted",
+      fetchImplementation,
+    )
+    const comment = {
+      actor_github_user_id: 7002,
+      actor_type: "User",
+      author_association: "MEMBER",
+      body_present: true,
+      created_at: "2026-07-20T14:00:00Z",
+      html_url: "https://github.com/example/repo/pull/42#discussion_r6001",
+      in_reply_to_github_id: null,
+      is_bot: false,
+      is_self_authored: false,
+      linked_review_github_id: 5001,
+      source_github_id: 6001,
+      source_version: "a".repeat(64),
+      updated_at: "2026-07-20T14:00:00Z",
+    }
+
+    await expect(repository.applyReviewComment({
+      action: "created",
+      comment,
+      githubInstallationId: 12345,
+      githubPullRequestId: 9001,
+      githubRepositoryId: 1001,
+    })).resolves.toEqual({
+      contribution_id: "comment-contribution-1",
+      disposition: "inserted",
+      scoring_recalculation_requested_at: "2026-07-20T14:00:00Z",
+    })
+    expect(fetchImplementation).toHaveBeenCalledWith(
+      "https://example.supabase.co/rest/v1/rpc/apply_github_review_comment",
+      expect.objectContaining({
+        body: JSON.stringify({
+          p_action: "created",
+          p_comment: comment,
+          p_github_installation_id: 12345,
+          p_github_pull_request_id: 9001,
+          p_github_repository_id: 1001,
+        }),
+        method: "POST",
+      }),
+    )
+  })
 })

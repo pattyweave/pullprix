@@ -950,7 +950,7 @@ Make review credit reversible when GitHub invalidates a review.
 
 ## PP-033 — Normalize review comments
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-001, PP-022, PP-030
 
