@@ -27,6 +27,29 @@ export type GitHubReviewContributionResult = {
     | "updated"
 }
 
+export type GitHubReviewDismissalChange = {
+  dismissal: {
+    dismissed_at: string
+    dismissed_by_github_user_id: number
+    reviewer_github_user_id: number
+    source_github_id: number
+    source_version: string
+  }
+  githubInstallationId: number
+  githubPullRequestId: number
+  githubRepositoryId: number
+}
+
+export type GitHubReviewDismissalResult = {
+  contribution_id: string | null
+  disposition:
+    | "dismissed"
+    | "ignored_installation"
+    | "ignored_repository"
+    | "unchanged"
+  scoring_recalculation_requested_at: string | null
+}
+
 const ACTIONS = new Set(["submitted", "edited"])
 const STATES = new Set(["approved", "changes_requested", "commented"])
 
@@ -68,6 +91,55 @@ async function version(value: Record<string, unknown>) {
 export function isReviewContributionEvent(delivery: StoredGitHubDelivery) {
   return delivery.event_name === "pull_request_review" &&
     Boolean(delivery.action && ACTIONS.has(delivery.action))
+}
+
+export function isReviewDismissalEvent(delivery: StoredGitHubDelivery) {
+  return delivery.event_name === "pull_request_review" &&
+    delivery.action === "dismissed"
+}
+
+export async function normalizeReviewDismissal(
+  delivery: StoredGitHubDelivery,
+): Promise<GitHubReviewDismissalChange | null> {
+  if (!isReviewDismissalEvent(delivery)) return null
+
+  const installation = object(delivery.payload.installation, "installation")
+  const repository = object(delivery.payload.repository, "repository")
+  const pullRequest = object(delivery.payload.pull_request, "pull_request")
+  const review = object(delivery.payload.review, "review")
+  const reviewer = object(review.user, "review.user")
+  const sender = object(delivery.payload.sender, "sender")
+  const state = string(review.state, "review.state").toLowerCase()
+  if (state !== "dismissed") {
+    throw new Error("GitHub review payload has invalid review.state")
+  }
+
+  const sourceGithubId = positiveInteger(review.id, "review.id")
+  const reviewerGithubUserId = positiveInteger(reviewer.id, "review.user.id")
+  const dismissedByGithubUserId = positiveInteger(sender.id, "sender.id")
+  const dismissedAt = timestamp(
+    pullRequest.updated_at,
+    "pull_request.updated_at",
+  )
+
+  return {
+    dismissal: {
+      dismissed_at: dismissedAt,
+      dismissed_by_github_user_id: dismissedByGithubUserId,
+      reviewer_github_user_id: reviewerGithubUserId,
+      source_github_id: sourceGithubId,
+      source_version: await version({
+        dismissedAt,
+        dismissedByGithubUserId,
+        reviewerGithubUserId,
+        sourceGithubId,
+        state,
+      }),
+    },
+    githubInstallationId: positiveInteger(installation.id, "installation.id"),
+    githubPullRequestId: positiveInteger(pullRequest.id, "pull_request.id"),
+    githubRepositoryId: positiveInteger(repository.id, "repository.id"),
+  }
 }
 
 export async function normalizeReviewContribution(

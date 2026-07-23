@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest"
 
 import {
   isReviewContributionEvent,
+  isReviewDismissalEvent,
   normalizeReviewContribution,
+  normalizeReviewDismissal,
 } from "./github-review.ts"
 import type { StoredGitHubDelivery } from "./github-installation.ts"
 
@@ -17,6 +19,12 @@ const fixtures = JSON.parse(
     "utf8",
   ),
 ) as Fixture[]
+const dismissalFixture = JSON.parse(
+  readFileSync(
+    new URL("./fixtures/review-dismissal.json", import.meta.url),
+    "utf8",
+  ),
+) as Fixture
 
 function delivery(fixture: Fixture): StoredGitHubDelivery {
   return {
@@ -84,11 +92,9 @@ describe("GitHub formal review normalization", () => {
   })
 
   it("leaves dismissals for PP-032", async () => {
-    const fixture = structuredClone(fixtures[0]!)
-    fixture.action = "dismissed"
-
-    expect(isReviewContributionEvent(delivery(fixture))).toBe(false)
-    await expect(normalizeReviewContribution(delivery(fixture))).resolves.toBeNull()
+    expect(isReviewContributionEvent(delivery(dismissalFixture))).toBe(false)
+    await expect(normalizeReviewContribution(delivery(dismissalFixture)))
+      .resolves.toBeNull()
   })
 
   it("rejects unsupported review states", async () => {
@@ -97,6 +103,44 @@ describe("GitHub formal review normalization", () => {
     review.state = "pending"
 
     await expect(normalizeReviewContribution(delivery(fixture))).rejects.toThrow(
+      "review.state",
+    )
+  })
+})
+
+describe("GitHub formal review dismissal normalization", () => {
+  it("retains review identity, dismissal actor, and event time", async () => {
+    expect(isReviewDismissalEvent(delivery(dismissalFixture))).toBe(true)
+    await expect(normalizeReviewDismissal(delivery(dismissalFixture))).resolves
+      .toMatchObject({
+        dismissal: {
+          dismissed_at: "2026-07-20T17:00:00Z",
+          dismissed_by_github_user_id: 7010,
+          reviewer_github_user_id: 7002,
+          source_github_id: 5001,
+          source_version: expect.stringMatching(/^[0-9a-f]{64}$/),
+        },
+        githubInstallationId: 12345,
+        githubPullRequestId: 9001,
+        githubRepositoryId: 1001,
+      })
+  })
+
+  it("gives duplicate dismissal payloads the same source version", async () => {
+    const first = await normalizeReviewDismissal(delivery(dismissalFixture))
+    const duplicate = await normalizeReviewDismissal(delivery(dismissalFixture))
+
+    expect(duplicate?.dismissal.source_version).toBe(
+      first?.dismissal.source_version,
+    )
+  })
+
+  it("rejects a dismissal whose review is not dismissed", async () => {
+    const fixture = structuredClone(dismissalFixture)
+    const review = fixture.payload.review as Record<string, unknown>
+    review.state = "approved"
+
+    await expect(normalizeReviewDismissal(delivery(fixture))).rejects.toThrow(
       "review.state",
     )
   })

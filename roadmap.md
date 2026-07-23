@@ -926,7 +926,7 @@ Convert formal GitHub reviews into canonical, theme-independent contributions.
 
 ## PP-032 — Normalize dismissed reviews
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-031
 

@@ -53,6 +53,11 @@ function repository(
       contribution_id: "contribution-1",
       disposition: "inserted",
     }),
+    applyReviewDismissal: vi.fn().mockResolvedValue({
+      contribution_id: "contribution-1",
+      disposition: "dismissed",
+      scoring_recalculation_requested_at: "2026-07-20T17:00:00Z",
+    }),
     applyRepositories: vi.fn().mockResolvedValue(0),
     getDelivery: vi.fn().mockResolvedValue(storedDelivery),
     isActive: vi.fn().mockResolvedValue(true),
@@ -190,20 +195,28 @@ describe("GitHub installation lifecycle processor", () => {
     )
   })
 
-  it("leaves review dismissals for PP-032", async () => {
-    const lifecycleRepository = repository({
-      action: "dismissed",
-      event_name: "pull_request_review",
-      github_installation_id: 12345,
-      id: "delivery-dismissed",
-      payload: { installation: { id: 12345 } },
-    })
+  it("applies a normalized review dismissal", async () => {
+    const fixture = JSON.parse(
+      readFileSync(
+        new URL("./fixtures/review-dismissal.json", import.meta.url),
+        "utf8",
+      ),
+    ) as Fixture
+    const lifecycleRepository = repository(delivery(fixture))
     const processor = createGitHubInstallationProcessor(lifecycleRepository)
 
     await expect(processor("delivery-dismissed")).resolves.toEqual({
-      disposition: "ignored",
-      reason: "review_action_not_relevant",
+      contribution_id: "contribution-1",
+      disposition: "dismissed",
+      scoring_recalculation_requested_at: "2026-07-20T17:00:00Z",
     })
+    expect(lifecycleRepository.applyReviewDismissal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dismissal: expect.objectContaining({
+          source_github_id: 5001,
+        }),
+      }),
+    )
   })
 
   it("applies a pull request lifecycle event for an active installation", async () => {

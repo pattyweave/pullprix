@@ -7,6 +7,7 @@ import type {
 import type { GitHubRepositoryChange } from "./github-repository.ts"
 import type { GitHubPullRequestChange } from "./github-pull-request.ts"
 import type { GitHubReviewContributionChange } from "./github-review.ts"
+import type { GitHubReviewDismissalChange } from "./github-review.ts"
 
 type Fetch = typeof fetch
 
@@ -138,6 +139,38 @@ export function createGitHubInstallationRepository(
       }>
       const result = results[0]
       if (!result) throw new Error("Review contribution returned no result")
+      return result
+    },
+
+    async applyReviewDismissal(change: GitHubReviewDismissalChange) {
+      const response = await fetchImplementation(
+        `${supabaseUrl}/rest/v1/rpc/dismiss_github_review_contribution`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            p_dismissal: change.dismissal,
+            p_github_installation_id: change.githubInstallationId,
+            p_github_pull_request_id: change.githubPullRequestId,
+            p_github_repository_id: change.githubRepositoryId,
+          }),
+        },
+      )
+      if (!response.ok) {
+        throw new Error(`Review dismissal apply failed with status ${response.status}`)
+      }
+
+      const results = (await response.json()) as Array<{
+        contribution_id: string | null
+        disposition:
+          | "dismissed"
+          | "ignored_installation"
+          | "ignored_repository"
+          | "unchanged"
+        scoring_recalculation_requested_at: string | null
+      }>
+      const result = results[0]
+      if (!result) throw new Error("Review dismissal returned no result")
       return result
     },
 

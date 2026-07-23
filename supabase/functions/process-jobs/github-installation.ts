@@ -13,11 +13,15 @@ import {
 import type { GitHubRepositoryChange } from "./github-repository.ts"
 import {
   isReviewContributionEvent,
+  isReviewDismissalEvent,
   normalizeReviewContribution,
+  normalizeReviewDismissal,
 } from "./github-review.ts"
 import type {
   GitHubReviewContributionChange,
   GitHubReviewContributionResult,
+  GitHubReviewDismissalChange,
+  GitHubReviewDismissalResult,
 } from "./github-review.ts"
 
 export type StoredGitHubDelivery = {
@@ -61,6 +65,9 @@ export interface GitHubInstallationRepository {
   applyReviewContribution(
     change: GitHubReviewContributionChange,
   ): Promise<GitHubReviewContributionResult>
+  applyReviewDismissal(
+    change: GitHubReviewDismissalChange,
+  ): Promise<GitHubReviewDismissalResult>
   getDelivery(deliveryId: string): Promise<StoredGitHubDelivery>
   isActive(githubInstallationId: number): Promise<boolean>
 }
@@ -203,6 +210,16 @@ export function createGitHubInstallationProcessor(
       }
 
       return repository.applyReviewContribution(change)
+    }
+
+    if (isReviewDismissalEvent(delivery)) {
+      const change = await normalizeReviewDismissal(delivery)
+      if (!change) throw new Error("GitHub review dismissal was not normalized")
+      if (!(await repository.isActive(change.githubInstallationId))) {
+        return { disposition: "ignored", reason: "installation_inactive" }
+      }
+
+      return repository.applyReviewDismissal(change)
     }
 
     if (

@@ -189,4 +189,47 @@ describe("GitHub installation repository", () => {
       }),
     )
   })
+
+  it("applies a review dismissal and returns its scoring marker", async () => {
+    const fetchImplementation = vi.fn().mockResolvedValue(Response.json([{
+      contribution_id: "contribution-1",
+      disposition: "dismissed",
+      scoring_recalculation_requested_at: "2026-07-20T17:00:00Z",
+    }])) as unknown as typeof fetch
+    const repository = createGitHubInstallationRepository(
+      "https://example.supabase.co",
+      "sb_secret_hosted",
+      fetchImplementation,
+    )
+    const dismissal = {
+      dismissed_at: "2026-07-20T17:00:00Z",
+      dismissed_by_github_user_id: 7010,
+      reviewer_github_user_id: 7002,
+      source_github_id: 5001,
+      source_version: "a".repeat(64),
+    }
+
+    await expect(repository.applyReviewDismissal({
+      dismissal,
+      githubInstallationId: 12345,
+      githubPullRequestId: 9001,
+      githubRepositoryId: 1001,
+    })).resolves.toEqual({
+      contribution_id: "contribution-1",
+      disposition: "dismissed",
+      scoring_recalculation_requested_at: "2026-07-20T17:00:00Z",
+    })
+    expect(fetchImplementation).toHaveBeenCalledWith(
+      "https://example.supabase.co/rest/v1/rpc/dismiss_github_review_contribution",
+      expect.objectContaining({
+        body: JSON.stringify({
+          p_dismissal: dismissal,
+          p_github_installation_id: 12345,
+          p_github_pull_request_id: 9001,
+          p_github_repository_id: 1001,
+        }),
+        method: "POST",
+      }),
+    )
+  })
 })

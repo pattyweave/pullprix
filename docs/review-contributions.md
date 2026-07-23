@@ -35,9 +35,30 @@ policy.
 
 - No points or theme concepts are calculated or stored.
 - Inline review comments are handled by PP-033.
-- Dismissed reviews become ineffective in PP-032.
 - Participant eligibility, author exclusion, review-credit windows, and season
   boundaries are applied by scoring rather than the webhook normalizer.
+
+## Dismissed reviews
+
+PP-032 makes the existing contribution ineffective instead of deleting it.
+The contribution retains:
+
+- Its original review identity and facts.
+- `superseded_at` as the dismissal time.
+- A deterministic dismissal source version.
+- The GitHub user who dismissed the review.
+
+The source version makes duplicate dismissal deliveries a no-op. A late edit
+cannot make a dismissed contribution effective again.
+
+The affected pull request receives a
+`scoring_recalculation_requested_at` timestamp. PP-040 can consume and clear
+that marker when scoring exists. PP-032 does not enqueue an unimplemented job
+or calculate points inside the webhook worker.
+
+The signed webhook delivery remains the detailed audit record. Dismissal
+metadata on the contribution is enough to explain why and when its scoring
+effect was removed without duplicating review or dismissal text.
 
 ## Privacy
 

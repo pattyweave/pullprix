@@ -1,0 +1,19 @@
+{
+  "name": "dismissed approval",
+  "action": "dismissed",
+  "event_name": "pull_request_review",
+  "payload": {
+    "installation": { "id": 12345 },
+    "repository": { "id": 1001 },
+    "pull_request": {
+      "id": 9001,
+      "updated_at": "2026-07-20T17:00:00Z"
+    },
+    "review": {
+      "id": 5001,
+      "user": { "id": 7002 },
+      "state": "dismissed"
+    },
+    "sender": { "id": 7010 }
+  }
+}
