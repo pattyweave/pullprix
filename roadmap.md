@@ -901,7 +901,7 @@ Maintain an accurate local representation of relevant pull requests.
 
 ## PP-031 — Normalize submitted and edited reviews
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-002, PP-022, PP-030
 

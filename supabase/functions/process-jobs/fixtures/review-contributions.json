@@ -1,0 +1,82 @@
+[
+  {
+    "name": "approval without body",
+    "action": "submitted",
+    "event_name": "pull_request_review",
+    "payload": {
+      "installation": { "id": 12345 },
+      "repository": { "id": 1001 },
+      "pull_request": { "id": 9001 },
+      "review": {
+        "id": 5001,
+        "user": { "id": 7002 },
+        "body": null,
+        "state": "approved",
+        "html_url": "https://github.com/pull-prix-sandbox/api/pull/42#pullrequestreview-5001",
+        "submitted_at": "2026-07-20T14:00:00Z",
+        "commit_id": "1111111111111111111111111111111111111111",
+        "author_association": "COLLABORATOR"
+      }
+    }
+  },
+  {
+    "name": "changes requested",
+    "action": "submitted",
+    "event_name": "pull_request_review",
+    "payload": {
+      "installation": { "id": 12345 },
+      "repository": { "id": 1001 },
+      "pull_request": { "id": 9001 },
+      "review": {
+        "id": 5002,
+        "user": { "id": 7003 },
+        "body": "Please handle the empty response.",
+        "state": "changes_requested",
+        "html_url": "https://github.com/pull-prix-sandbox/api/pull/42#pullrequestreview-5002",
+        "submitted_at": "2026-07-20T15:00:00Z",
+        "commit_id": "2222222222222222222222222222222222222222",
+        "author_association": "MEMBER"
+      }
+    }
+  },
+  {
+    "name": "comment-only review",
+    "action": "submitted",
+    "event_name": "pull_request_review",
+    "payload": {
+      "installation": { "id": 12345 },
+      "repository": { "id": 1001 },
+      "pull_request": { "id": 9001 },
+      "review": {
+        "id": 5003,
+        "user": { "id": 7004 },
+        "body": "One question about the fallback.",
+        "state": "commented",
+        "html_url": "https://github.com/pull-prix-sandbox/api/pull/42#pullrequestreview-5003",
+        "submitted_at": "2026-07-20T16:00:00Z",
+        "commit_id": "3333333333333333333333333333333333333333",
+        "author_association": "MEMBER"
+      }
+    }
+  },
+  {
+    "name": "edited approval",
+    "action": "edited",
+    "event_name": "pull_request_review",
+    "payload": {
+      "installation": { "id": 12345 },
+      "repository": { "id": 1001 },
+      "pull_request": { "id": 9001 },
+      "review": {
+        "id": 5001,
+        "user": { "id": 7002 },
+        "body": "Looks good after another pass.",
+        "state": "approved",
+        "html_url": "https://github.com/pull-prix-sandbox/api/pull/42#pullrequestreview-5001",
+        "submitted_at": "2026-07-20T14:00:00Z",
+        "commit_id": "1111111111111111111111111111111111111111",
+        "author_association": "COLLABORATOR"
+      }
+    }
+  }
+]

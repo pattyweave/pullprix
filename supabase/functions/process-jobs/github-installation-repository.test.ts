@@ -144,4 +144,49 @@ describe("GitHub installation repository", () => {
       }),
     )
   })
+
+  it("applies a canonical review contribution through one RPC", async () => {
+    const fetchImplementation = vi.fn().mockResolvedValue(Response.json([{
+      contribution_id: "contribution-1",
+      disposition: "inserted",
+    }])) as unknown as typeof fetch
+    const repository = createGitHubInstallationRepository(
+      "https://example.supabase.co",
+      "sb_secret_hosted",
+      fetchImplementation,
+    )
+    const review = {
+      actor_github_user_id: 7002,
+      author_association: "COLLABORATOR",
+      body_present: false,
+      commit_id: "1111111111111111111111111111111111111111",
+      html_url: "https://github.com/example/repo/pull/42#pullrequestreview-5001",
+      occurred_at: "2026-07-20T14:00:00Z",
+      review_state: "approved" as const,
+      source_github_id: 5001,
+      source_version: "a".repeat(64),
+    }
+
+    await expect(repository.applyReviewContribution({
+      githubInstallationId: 12345,
+      githubPullRequestId: 9001,
+      githubRepositoryId: 1001,
+      review,
+    })).resolves.toEqual({
+      contribution_id: "contribution-1",
+      disposition: "inserted",
+    })
+    expect(fetchImplementation).toHaveBeenCalledWith(
+      "https://example.supabase.co/rest/v1/rpc/apply_github_review_contribution",
+      expect.objectContaining({
+        body: JSON.stringify({
+          p_github_installation_id: 12345,
+          p_github_pull_request_id: 9001,
+          p_github_repository_id: 1001,
+          p_review: review,
+        }),
+        method: "POST",
+      }),
+    )
+  })
 })

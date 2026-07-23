@@ -11,6 +11,14 @@ import {
   normalizeRepositoryChanges,
 } from "./github-repository.ts"
 import type { GitHubRepositoryChange } from "./github-repository.ts"
+import {
+  isReviewContributionEvent,
+  normalizeReviewContribution,
+} from "./github-review.ts"
+import type {
+  GitHubReviewContributionChange,
+  GitHubReviewContributionResult,
+} from "./github-review.ts"
 
 export type StoredGitHubDelivery = {
   action: string | null
@@ -50,6 +58,9 @@ export interface GitHubInstallationRepository {
     change: GitHubPullRequestChange,
   ): Promise<GitHubPullRequestLifecycleResult>
   applyRepositories(change: GitHubRepositoryChange): Promise<number>
+  applyReviewContribution(
+    change: GitHubReviewContributionChange,
+  ): Promise<GitHubReviewContributionResult>
   getDelivery(deliveryId: string): Promise<StoredGitHubDelivery>
   isActive(githubInstallationId: number): Promise<boolean>
 }
@@ -184,6 +195,16 @@ export function createGitHubInstallationProcessor(
       return repository.applyPullRequest(change)
     }
 
+    if (isReviewContributionEvent(delivery)) {
+      const change = await normalizeReviewContribution(delivery)
+      if (!change) throw new Error("GitHub review contribution was not normalized")
+      if (!(await repository.isActive(change.githubInstallationId))) {
+        return { disposition: "ignored", reason: "installation_inactive" }
+      }
+
+      return repository.applyReviewContribution(change)
+    }
+
     if (
       delivery.github_installation_id &&
       !(await repository.isActive(delivery.github_installation_id))
@@ -202,6 +223,13 @@ export function createGitHubInstallationProcessor(
       return {
         disposition: "ignored",
         reason: "pull_request_action_not_relevant",
+      }
+    }
+
+    if (delivery.event_name === "pull_request_review") {
+      return {
+        disposition: "ignored",
+        reason: "review_action_not_relevant",
       }
     }
 

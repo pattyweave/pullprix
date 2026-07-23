@@ -6,6 +6,7 @@ import type {
 } from "./github-installation.ts"
 import type { GitHubRepositoryChange } from "./github-repository.ts"
 import type { GitHubPullRequestChange } from "./github-pull-request.ts"
+import type { GitHubReviewContributionChange } from "./github-review.ts"
 
 type Fetch = typeof fetch
 
@@ -105,6 +106,38 @@ export function createGitHubInstallationRepository(
       }>
       const result = results[0]
       if (!result) throw new Error("Pull request lifecycle change returned no result")
+      return result
+    },
+
+    async applyReviewContribution(change: GitHubReviewContributionChange) {
+      const response = await fetchImplementation(
+        `${supabaseUrl}/rest/v1/rpc/apply_github_review_contribution`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            p_github_installation_id: change.githubInstallationId,
+            p_github_pull_request_id: change.githubPullRequestId,
+            p_github_repository_id: change.githubRepositoryId,
+            p_review: change.review,
+          }),
+        },
+      )
+      if (!response.ok) {
+        throw new Error(`Review contribution apply failed with status ${response.status}`)
+      }
+
+      const results = (await response.json()) as Array<{
+        contribution_id: string | null
+        disposition:
+          | "ignored_installation"
+          | "ignored_repository"
+          | "inserted"
+          | "unchanged"
+          | "updated"
+      }>
+      const result = results[0]
+      if (!result) throw new Error("Review contribution returned no result")
       return result
     },
 

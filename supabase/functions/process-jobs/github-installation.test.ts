@@ -49,6 +49,10 @@ function repository(
       disposition: "inserted",
       pull_request_id: "pull-request-1",
     }),
+    applyReviewContribution: vi.fn().mockResolvedValue({
+      contribution_id: "contribution-1",
+      disposition: "inserted",
+    }),
     applyRepositories: vi.fn().mockResolvedValue(0),
     getDelivery: vi.fn().mockResolvedValue(storedDelivery),
     isActive: vi.fn().mockResolvedValue(true),
@@ -130,13 +134,13 @@ describe("GitHub installation lifecycle processor", () => {
   })
 
   it("ignores non-lifecycle work after an installation stops", async () => {
-    const lifecycleRepository = repository({
-      action: "submitted",
-      event_name: "pull_request_review",
-      github_installation_id: 12345,
-      id: "delivery-review",
-      payload: { installation: { id: 12345 } },
-    })
+    const fixture = JSON.parse(
+      readFileSync(
+        new URL("./fixtures/review-contributions.json", import.meta.url),
+        "utf8",
+      ),
+    )[0] as Fixture
+    const lifecycleRepository = repository(delivery(fixture))
     lifecycleRepository.isActive.mockResolvedValue(false)
     const processor = createGitHubInstallationProcessor(lifecycleRepository)
 
@@ -148,7 +152,7 @@ describe("GitHub installation lifecycle processor", () => {
     expect(lifecycleRepository.applyRepositories).not.toHaveBeenCalled()
   })
 
-  it("leaves future active event types available for their own ticket", async () => {
+  it("rejects malformed review events", async () => {
     const lifecycleRepository = repository({
       action: "submitted",
       event_name: "pull_request_review",
@@ -158,9 +162,48 @@ describe("GitHub installation lifecycle processor", () => {
     })
     const processor = createGitHubInstallationProcessor(lifecycleRepository)
 
-    await expect(processor("delivery-review")).rejects.toThrow(
-      "No installation lifecycle processor for pull_request_review.submitted",
+    await expect(processor("delivery-review")).rejects.toThrow("missing repository")
+  })
+
+  it("applies a normalized formal review contribution", async () => {
+    const fixture = JSON.parse(
+      readFileSync(
+        new URL("./fixtures/review-contributions.json", import.meta.url),
+        "utf8",
+      ),
+    )[0] as Fixture
+    const lifecycleRepository = repository(delivery(fixture))
+    const processor = createGitHubInstallationProcessor(lifecycleRepository)
+
+    await expect(processor("delivery-approval")).resolves.toEqual({
+      contribution_id: "contribution-1",
+      disposition: "inserted",
+    })
+    expect(lifecycleRepository.applyReviewContribution).toHaveBeenCalledWith(
+      expect.objectContaining({
+        githubPullRequestId: 9001,
+        review: expect.objectContaining({
+          review_state: "approved",
+          source_github_id: 5001,
+        }),
+      }),
     )
+  })
+
+  it("leaves review dismissals for PP-032", async () => {
+    const lifecycleRepository = repository({
+      action: "dismissed",
+      event_name: "pull_request_review",
+      github_installation_id: 12345,
+      id: "delivery-dismissed",
+      payload: { installation: { id: 12345 } },
+    })
+    const processor = createGitHubInstallationProcessor(lifecycleRepository)
+
+    await expect(processor("delivery-dismissed")).resolves.toEqual({
+      disposition: "ignored",
+      reason: "review_action_not_relevant",
+    })
   })
 
   it("applies a pull request lifecycle event for an active installation", async () => {
