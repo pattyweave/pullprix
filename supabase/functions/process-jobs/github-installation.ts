@@ -1,3 +1,17 @@
+import {
+  isPullRequestLifecycleEvent,
+  normalizePullRequestLifecycle,
+} from "./github-pull-request.ts"
+import type {
+  GitHubPullRequestChange,
+  GitHubPullRequestLifecycleResult,
+} from "./github-pull-request.ts"
+import {
+  isRepositoryAccessEvent,
+  normalizeRepositoryChanges,
+} from "./github-repository.ts"
+import type { GitHubRepositoryChange } from "./github-repository.ts"
+
 export type StoredGitHubDelivery = {
   action: string | null
   event_name: string
@@ -32,6 +46,9 @@ export type InstallationLifecycleResult = {
 
 export interface GitHubInstallationRepository {
   apply(change: InstallationLifecycleChange): Promise<InstallationLifecycleResult>
+  applyPullRequest(
+    change: GitHubPullRequestChange,
+  ): Promise<GitHubPullRequestLifecycleResult>
   applyRepositories(change: GitHubRepositoryChange): Promise<number>
   getDelivery(deliveryId: string): Promise<StoredGitHubDelivery>
   isActive(githubInstallationId: number): Promise<boolean>
@@ -158,6 +175,15 @@ export function createGitHubInstallationProcessor(
       }
     }
 
+    if (isPullRequestLifecycleEvent(delivery)) {
+      const change = normalizePullRequestLifecycle(delivery)!
+      if (!(await repository.isActive(change.githubInstallationId))) {
+        return { disposition: "ignored", reason: "installation_inactive" }
+      }
+
+      return repository.applyPullRequest(change)
+    }
+
     if (
       delivery.github_installation_id &&
       !(await repository.isActive(delivery.github_installation_id))
@@ -172,13 +198,15 @@ export function createGitHubInstallationProcessor(
       }
     }
 
+    if (delivery.event_name === "pull_request") {
+      return {
+        disposition: "ignored",
+        reason: "pull_request_action_not_relevant",
+      }
+    }
+
     throw new Error(
       `No installation lifecycle processor for ${delivery.event_name}.${delivery.action ?? "missing"}`,
     )
   }
 }
-import {
-  isRepositoryAccessEvent,
-  normalizeRepositoryChanges,
-} from "./github-repository.ts"
-import type { GitHubRepositoryChange } from "./github-repository.ts"

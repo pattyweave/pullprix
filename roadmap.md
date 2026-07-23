@@ -875,7 +875,7 @@ Make authenticated GitHub API requests for each installation.
 
 ## PP-030 — Persist pull-request lifecycle state
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-022, PP-024
 

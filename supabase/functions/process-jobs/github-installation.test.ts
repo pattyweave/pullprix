@@ -45,6 +45,10 @@ function repository(
       installation_status: "active",
       organization_id: "organization-1",
     }),
+    applyPullRequest: vi.fn().mockResolvedValue({
+      disposition: "inserted",
+      pull_request_id: "pull-request-1",
+    }),
     applyRepositories: vi.fn().mockResolvedValue(0),
     getDelivery: vi.fn().mockResolvedValue(storedDelivery),
     isActive: vi.fn().mockResolvedValue(true),
@@ -157,6 +161,45 @@ describe("GitHub installation lifecycle processor", () => {
     await expect(processor("delivery-review")).rejects.toThrow(
       "No installation lifecycle processor for pull_request_review.submitted",
     )
+  })
+
+  it("applies a pull request lifecycle event for an active installation", async () => {
+    const fixture = JSON.parse(
+      readFileSync(
+        new URL("./fixtures/pull-request-lifecycle.json", import.meta.url),
+        "utf8",
+      ),
+    )[0] as Fixture
+    const lifecycleRepository = repository(delivery(fixture))
+    const processor = createGitHubInstallationProcessor(lifecycleRepository)
+
+    await expect(processor("delivery-draft-opened")).resolves.toEqual({
+      disposition: "inserted",
+      pull_request_id: "pull-request-1",
+    })
+    expect(lifecycleRepository.applyPullRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "opened",
+        githubInstallationId: 12345,
+        githubRepositoryId: 1001,
+      }),
+    )
+  })
+
+  it("ignores pull request actions outside the lifecycle ticket", async () => {
+    const lifecycleRepository = repository({
+      action: "labeled",
+      event_name: "pull_request",
+      github_installation_id: 12345,
+      id: "delivery-labeled",
+      payload: { installation: { id: 12345 } },
+    })
+    const processor = createGitHubInstallationProcessor(lifecycleRepository)
+
+    await expect(processor("delivery-labeled")).resolves.toEqual({
+      disposition: "ignored",
+      reason: "pull_request_action_not_relevant",
+    })
   })
 
   it("ignores repository actions unrelated to access or identity", async () => {

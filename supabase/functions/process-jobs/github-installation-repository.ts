@@ -5,6 +5,7 @@ import type {
   StoredGitHubDelivery,
 } from "./github-installation.ts"
 import type { GitHubRepositoryChange } from "./github-repository.ts"
+import type { GitHubPullRequestChange } from "./github-pull-request.ts"
 
 type Fetch = typeof fetch
 
@@ -78,6 +79,33 @@ export function createGitHubInstallationRepository(
       }
 
       return (await response.json()) as number
+    },
+
+    async applyPullRequest(change: GitHubPullRequestChange) {
+      const response = await fetchImplementation(
+        `${supabaseUrl}/rest/v1/rpc/apply_github_pull_request_lifecycle`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            p_action: change.action,
+            p_github_installation_id: change.githubInstallationId,
+            p_github_repository_id: change.githubRepositoryId,
+            p_pull_request: change.pullRequest,
+          }),
+        },
+      )
+      if (!response.ok) {
+        throw new Error(`Pull request lifecycle apply failed with status ${response.status}`)
+      }
+
+      const results = (await response.json()) as Array<{
+        disposition: "ignored_repository" | "inserted" | "stale" | "updated"
+        pull_request_id: string | null
+      }>
+      const result = results[0]
+      if (!result) throw new Error("Pull request lifecycle change returned no result")
+      return result
     },
 
     async apply(change: InstallationLifecycleChange) {
