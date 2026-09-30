@@ -1,6 +1,30 @@
 # Active handoff — 2026-09-30
 
-## Latest: team picker expiry fixed
+## Latest: production frontend deployed and verified
+
+User explicitly authorized bringing the live frontend up to date. Release
+3a27574 pushed to master; Vercel production deployment
+7TkgdTny3t6v7G3RmMW7bgiwxmW9 reported Ready. Canonical origin is
+https://www.pullprix.com (apex redirects there). Vercel Production now contains
+the two public VITE_SUPABASE_* values; no server credentials were uploaded.
+Supabase Site URL is https://www.pullprix.com and the exact /auth/callback is
+allowlisted. Existing localhost callback retained, but hosted APP_URL is now
+production-only: local frontend must use a local backend or a deliberate future
+development-origin configuration. Auth-session, installation-setup and product-api
+redeployed for the production origin. GitHub App setup URL saved as
+https://www.pullprix.com/installations/callback; OAuth provider callback unchanged.
+
+Verified in the public browser: complete GitHub sign-in as pattyweave, both
+team links, Piss-Boys-Studio dashboard with two track markers, williamsaintweaver
+10 points/rank 1 and pattyweave 0, and direct dashboard reload. All three backend
+CORS preflights return 204 with the production origin. Deep links /sign-in,
+/teams/166282661, /privacy, /terms and /pilot return HTML 200.
+Release tests: 449 app tests, build/lint pass with existing warnings; latest
+database suite 683 assertions. Friend account access and disposable uninstall
+rehearsal remain pending. Production visual QA is now verified; the prior
+localhost browser restriction was not bypassed.
+
+## Previous: team picker expiry fixed
 
 User saw only Pull-Prix despite previously visiting Piss-Boys-Studio. Hosted
 audit confirmed both memberships/installations active, but Piss Boys' lease

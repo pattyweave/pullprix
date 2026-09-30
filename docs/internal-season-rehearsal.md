@@ -115,6 +115,15 @@ remain necessary; repairing this old attempt does not pass the latency target.
 
 ## Where Patrick is needed
 
+September 30 production update: hosting and URL cutover below are complete.
+Frontend release 3a27574 is live at https://www.pullprix.com; public Vercel
+environment, Supabase Site URL/redirect, backend APP_URL and GitHub App setup
+return URL are configured. Real production GitHub sign-in, both team links,
+Piss-Boys-Studio's 10-point standings/track and direct-page reload were verified
+in the browser. Remaining human checks are another account's access, a denied
+account, fresh timed review visibility, season archive and disposable uninstall.
+The earlier checklist below records the original prerequisites.
+
 1. Hosting: name the frontend hosting provider and intended HTTPS URL (for
    example, app.pullprix.com versus pullprix.com), and provide access through the
    normal account/connector flow. Do not paste tokens into chat. Codex can then
