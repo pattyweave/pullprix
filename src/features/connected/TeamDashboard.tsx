@@ -65,19 +65,19 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
     <p className="mt-3 text-sm text-text-faint">Updates every 15 seconds · Last updated <time dateTime={data.season.generatedAt}>{new Date(data.season.generatedAt).toLocaleTimeString()}</time></p>
     {teamSetup.canManage && <ShareTeamLink installationId={installationId} />}
     <TeamNotice data={data} />
-    <div className="grid gap-6 lg:grid-cols-2">
-      <div><SeasonWelcome season={data.season.season} onRollover={() => void refresh()} track={<>
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="min-w-0"><SeasonWelcome season={data.season.season} onRollover={() => void refresh()} track={<>
         <div className="h-64 sm:h-80"><TrackMap circuit={JACAREPAGUA} drivers={trackDrivers(frame.rows, selectedRow?.participantId)} onSelectDriver={setSelected} /></div>
         <p className="mt-3 text-center text-sm text-text-faint">{historical ? 'Replay' : 'Live'} · {POINTS_PER_LAP} points per lap · Standings show total points</p>
       </>} /></div>
-      <section className="mt-6 rounded-xl border border-line bg-surface p-5" aria-labelledby="standings-heading">
-        <div className="flex items-start justify-between gap-3"><div><p className="font-mono text-xs uppercase tracking-widest text-accent">{historical ? 'Season replay' : 'Live standings'}</p><h2 id="standings-heading" className="mt-2 text-xl font-semibold">Championship</h2></div>
+      <section className="mt-6 min-w-0 rounded-xl border border-line bg-surface p-4 sm:p-5" aria-labelledby="standings-heading">
+        <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-mono text-xs uppercase tracking-widest text-accent">{historical ? 'Season replay' : 'Live standings'}</p><h2 id="standings-heading" className="mt-2 text-xl font-semibold">Championship</h2></div>
           <p className="text-right"><strong className="text-3xl">{frame.totalPoints}</strong><span className="block text-xs text-text-faint">team points</span></p></div>
         {historical && <p className="mt-3 text-sm">As of {new Date(frame.snapshot!.sampledAt).toLocaleString()}</p>}
         {!frame.rows.length ? <p className="mt-6 text-text-faint">{historical ? 'No participants had joined at this point in the season.' : !teamSetup.repositories.length ? 'Connect a repository to begin importing your team’s activity.' : teamSetup.repositories.some(r => r.status !== 'completed') ? 'Your roster is still being imported. Check repository setup for progress.' : 'No participants yet. Open a PR or submit a formal review in a connected repository to start building your team roster.'}</p> : <ol className="mt-5 divide-y divide-line">{frame.rows.map(person => <li key={person.participantId}>
-          <button className={`flex w-full items-center gap-3 rounded p-3 text-left ${person.participantId === selectedRow?.participantId ? 'bg-accent/10' : 'hover:bg-background'}`}
+          <button className={`flex w-full items-center gap-2 rounded px-2 py-3 text-left sm:gap-3 sm:px-3 ${person.participantId === selectedRow?.participantId ? 'bg-accent/10' : 'hover:bg-background'}`}
             aria-pressed={person.participantId === selectedRow?.participantId} onClick={() => setSelected(person.participantId)}>
-            <span className="w-8 shrink-0 font-mono text-lg text-accent">{person.rank === null ? '—' : `${person.tied ? '=' : ''}${person.rank}`}</span>
+            <span className="w-5 shrink-0 font-mono text-lg text-accent sm:w-8">{person.rank === null ? '—' : `${person.tied ? '=' : ''}${person.rank}`}</span>
             {person.avatarUrl && <img src={person.avatarUrl} alt="" className="h-9 w-9 shrink-0 rounded-full" />}
             <span className="min-w-0 flex-1"><span className="block break-words font-medium">{person.displayName}</span>
               <span className="block text-xs text-text-faint">{!historical && !person.active ? 'Inactive driver' : person.points === 0 ? RACING_MANIFEST.vocabulary.notStarted : person.tied ? 'Tied position' : 'Championship driver'}</span></span>
