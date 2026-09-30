@@ -1,6 +1,27 @@
 # Active handoff — 2026-09-30
 
-## Latest: production frontend deployed and verified
+## Latest: PP-088 homepage entry and mobile pass deployed
+
+User authorized a clear implementation plan, optional ticket, and continuation
+in this chat. PP-088 now records this work. Frontend commits 5b1e61c and 8bf2144
+are pushed; Vercel reports success for the final narrow-phone fix.
+Header/hero/footer sign-in and pilot-guide links replace the inert waitlist.
+Homepage claims now match shipped features (review health, replay, private
+access), removing deferred suggestions/badges/custom themes and blanket claims
+that every comment earns points. Dashboard controls have larger touch areas,
+long names wrap, and the single-column grid no longer overflows at 320px.
+
+Public-browser checks: homepage widths 320/375/768 without overflow; GitHub
+login into both-team picker; Piss Boys standings/track; select pattyweave; replay
+and back-to-live; 320px pilot guide; dashboard reload. Final 320px dashboard
+document/client widths both 305 (15px scrollbar), compared with prior 352px
+overflow. 449 app tests/build/lint pass, then 23 dashboard tests/build pass after
+the overflow correction. No backend changes or team deletion.
+An optional question asks whether a monitored pilot inquiry email exists.
+Until answered, guide links and existing Patrick support wording remain; do not
+invent an email. Friend access screenshots are still pending.
+
+## Previous: production frontend deployed and verified
 
 User explicitly authorized bringing the live frontend up to date. Release
 3a27574 pushed to master; Vercel production deployment

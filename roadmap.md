@@ -2221,6 +2221,25 @@ season with a real team.
 
 ---
 
+## PP-088 — Make pilot entry clear and verify mobile usability
+
+- Status: `DONE`
+- Priority: `P1`
+- Dependencies: PP-061, PP-064, PP-085
+
+Implemented September 30: prominent homepage/header sign-in, real pilot-guide
+links instead of the placeholder waitlist, privacy/terms entry links, and copy
+limited to shipped pilot capabilities. Increased dashboard touch targets and
+fixed grid overflow at 320px; improved long-name wrapping and standings spacing.
+Production verification covered homepage widths 320/375/768, mobile GitHub
+sign-in and team selection, track/standings, driver selection, replay/back-to-live,
+pilot guide and reload. All 449 existing tests passed; the final overflow fix
+also passed 23 dashboard regressions and the build. Existing lint/build warnings
+remain. Pilot inquiry email is intentionally not published until confirmed.
+Friend access testing and season/uninstall checks remain tracked by PP-086.
+
+---
+
 # Post-MVP backlog
 
 These tickets are intentionally excluded from the first private MVP unless a
