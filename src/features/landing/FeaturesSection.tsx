@@ -1,35 +1,36 @@
 import { motion } from 'framer-motion'
+import { Activity, Flag, Flame, ListOrdered, Rewind, ShieldCheck } from 'lucide-react'
 
 import { Section, SectionTitle, Eyebrow } from './Section'
 
 const FEATURES = [
   {
-    icon: '🏁',
+    icon: Flag,
     title: 'Seasonal Championships',
     desc: 'Reviews roll up into seasons with a clear start, finish, and champion.',
   },
   {
-    icon: '📈',
+    icon: ListOrdered,
     title: 'Live Team Standings',
     desc: 'Follow qualifying review contributions as your team moves around the circuit.',
   },
   {
-    icon: '🎯',
+    icon: Activity,
     title: 'Review Health',
     desc: 'See participation, waiting PRs, and time to first review in one place.',
   },
   {
-    icon: '🏆',
+    icon: Rewind,
     title: 'Season Replay',
     desc: 'Look back through daily standings and see how the season unfolded.',
   },
   {
-    icon: '⚡',
+    icon: Flame,
     title: 'Review Streaks',
     desc: 'Reward consistency — daily streaks that keep momentum going.',
   },
   {
-    icon: '🎮',
+    icon: ShieldCheck,
     title: 'Private Team Access',
     desc: 'GitHub sign-in and verified team access keep your dashboard private.',
   },
@@ -54,9 +55,12 @@ export function FeaturesSection() {
             transition={{ type: 'spring', stiffness: 400, damping: 28 }}
             className="group flex flex-col gap-3 rounded-xl bg-surface p-6 ring-1 ring-inset ring-line transition-colors duration-200 hover:ring-accent/40"
           >
-            <span className="text-2xl transition-transform duration-200 group-hover:scale-110">
-              {f.icon}
-            </span>
+            <f.icon
+              aria-hidden="true"
+              size={24}
+              strokeWidth={1.75}
+              className="shrink-0 text-accent transition-[filter] duration-200 group-hover:drop-shadow-[0_0_8px_var(--pp-accent)]"
+            />
             <h3 className="font-heading text-base font-semibold text-text">
               {f.title}
             </h3>
