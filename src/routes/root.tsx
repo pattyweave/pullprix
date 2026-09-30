@@ -1,5 +1,7 @@
 import { Link, Outlet, createRootRoute } from '@tanstack/react-router'
 
+import { useSignedIn } from '../features/auth/use-signed-in'
+
 import logoMark from '@/assets/logo.svg'
 
 /**
@@ -11,6 +13,7 @@ export const rootRoute = createRootRoute({
 })
 
 function RootLayout() {
+  const signedIn = useSignedIn()
   return (
     <div className="min-h-svh bg-background text-foreground">
       <nav aria-label="Main navigation" className="flex min-h-16 items-center gap-3 border-b border-line px-(--pp-gutter)">
@@ -29,9 +32,9 @@ function RootLayout() {
           >
             Demo
           </Link>
-          <Link to="/sign-in" className="inline-flex min-h-11 items-center rounded-full border border-line-strong px-5 text-sm font-semibold transition-colors hover:border-accent hover:text-accent">
-            Sign in
-          </Link>
+          <a href={signedIn ? "/sign-in?account=1" : "/sign-in"} className="inline-flex min-h-11 items-center rounded-full border border-line-strong px-5 text-sm font-semibold transition-colors hover:border-accent hover:text-accent">
+            {signedIn ? 'Your account' : 'Sign in'}
+          </a>
         </div>
       </nav>
       <Outlet />

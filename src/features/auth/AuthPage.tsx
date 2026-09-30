@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { authClient, type Access } from './client'
+import { soleTeamPath } from './team-destination'
 import { rememberSetupReturn, takeSetupReturn } from '../setup/return-path'
 
 // Keep the callback exchange single-flight across development StrictMode mounts.
@@ -22,7 +23,7 @@ export function AuthPage() {
       const result = await client.access()
       if (result) {
         rememberSetupReturn(params.get('next'))
-        const next = params.get('account') === '1' ? null : takeSetupReturn()
+        const next = params.get('account') === '1' ? null : takeSetupReturn() ?? soleTeamPath(result)
         if (next) { window.location.replace(next); return }
       }
       if (active) setAccess(result)

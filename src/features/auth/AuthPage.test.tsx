@@ -6,6 +6,14 @@ const client=vi.hoisted(()=>({access:vi.fn(),signInUrl:vi.fn(),signOut:vi.fn(),f
 vi.mock('./client',()=>({authClient:()=>client}))
 afterEach(()=>{cleanup();vi.resetAllMocks();window.sessionStorage.clear();window.history.replaceState({},'', '/sign-in')})
 describe('sign-in screen',()=>{
+ it('keeps a single-team account page reachable for sign-out',async()=>{
+  window.history.replaceState({},'', '/sign-in?account=1')
+  client.access.mockResolvedValue({login:'human',organizations:[{id:'one',name:'One team',installationId:42}]})
+  render(<AuthPage />)
+  expect((await screen.findByRole('link',{name:'One team'})).getAttribute('href')).toBe('/teams/42')
+  expect(screen.getByRole('button',{name:'Sign out'})).toBeTruthy()
+ })
+
  it('lets a denied user inspect their account without bouncing back to the denied team',async()=>{
   window.history.replaceState({},'', '/sign-in?account=1&next=%2Fteams%2F12')
   client.access.mockResolvedValue({login:'wrong-user',organizations:[]});render(<AuthPage />)
