@@ -3,6 +3,28 @@ import { describe, expect, it, vi } from "vitest"
 import { createGitHubInstallationRepository } from "./github-installation-repository.ts"
 
 describe("GitHub installation repository", () => {
+  it("resolves participants using the stored delivery identity", async () => {
+    const request = vi.fn().mockResolvedValue(Response.json(2))
+    const repository = createGitHubInstallationRepository(
+      "https://example.supabase.co", "sb_secret_test", request,
+    )
+    await repository.resolveParticipants("delivery-1")
+    expect(request).toHaveBeenCalledWith(
+      "https://example.supabase.co/rest/v1/rpc/resolve_github_delivery_participants",
+      expect.objectContaining({ body: JSON.stringify({ p_delivery_id: "delivery-1" }) }),
+    )
+  })
+
+  it("fails the job when participant persistence fails so retry can complete it", async () => {
+    const request = vi.fn().mockResolvedValue(new Response(null, { status: 500 }))
+    const repository = createGitHubInstallationRepository(
+      "https://example.supabase.co", "sb_secret_test", request,
+    )
+    await expect(repository.resolveParticipants("delivery-1")).rejects.toThrow(
+      "Participant resolution failed with status 500",
+    )
+  })
+
   it("loads a delivery and applies its lifecycle change", async () => {
     const fetchImplementation = vi.fn()
       .mockResolvedValueOnce(Response.json([{
@@ -17,7 +39,7 @@ describe("GitHub installation repository", () => {
         installation_id: "installation-1",
         installation_status: "active",
         organization_id: "organization-1",
-      }])) as unknown as typeof fetch
+      }]))
     const repository = createGitHubInstallationRepository(
       "http://localhost:54321",
       "eyJlegacy-service-role",
@@ -52,7 +74,7 @@ describe("GitHub installation repository", () => {
   it("checks installation activity without using Authorization for hosted keys", async () => {
     const fetchImplementation = vi.fn().mockResolvedValue(
       Response.json(false),
-    ) as unknown as typeof fetch
+    )
     const repository = createGitHubInstallationRepository(
       "https://example.supabase.co",
       "sb_secret_hosted",
@@ -70,7 +92,7 @@ describe("GitHub installation repository", () => {
   it("applies normalized repository changes through one RPC", async () => {
     const fetchImplementation = vi.fn().mockResolvedValue(
       Response.json(1),
-    ) as unknown as typeof fetch
+    )
     const repository = createGitHubInstallationRepository(
       "https://example.supabase.co",
       "sb_secret_hosted",
@@ -101,7 +123,7 @@ describe("GitHub installation repository", () => {
     const fetchImplementation = vi.fn().mockResolvedValue(Response.json([{
       disposition: "inserted",
       pull_request_id: "pull-request-1",
-    }])) as unknown as typeof fetch
+    }]))
     const repository = createGitHubInstallationRepository(
       "https://example.supabase.co",
       "sb_secret_hosted",
@@ -149,7 +171,7 @@ describe("GitHub installation repository", () => {
     const fetchImplementation = vi.fn().mockResolvedValue(Response.json([{
       contribution_id: "contribution-1",
       disposition: "inserted",
-    }])) as unknown as typeof fetch
+    }]))
     const repository = createGitHubInstallationRepository(
       "https://example.supabase.co",
       "sb_secret_hosted",
@@ -195,7 +217,7 @@ describe("GitHub installation repository", () => {
       contribution_id: "contribution-1",
       disposition: "dismissed",
       scoring_recalculation_requested_at: "2026-07-20T17:00:00Z",
-    }])) as unknown as typeof fetch
+    }]))
     const repository = createGitHubInstallationRepository(
       "https://example.supabase.co",
       "sb_secret_hosted",
@@ -238,7 +260,7 @@ describe("GitHub installation repository", () => {
       contribution_id: "comment-contribution-1",
       disposition: "inserted",
       scoring_recalculation_requested_at: "2026-07-20T14:00:00Z",
-    }])) as unknown as typeof fetch
+    }]))
     const repository = createGitHubInstallationRepository(
       "https://example.supabase.co",
       "sb_secret_hosted",

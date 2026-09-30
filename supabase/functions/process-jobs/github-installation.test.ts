@@ -28,6 +28,7 @@ function delivery(fixture: Fixture): StoredGitHubDelivery {
     github_installation_id: 12345,
     id: `delivery-${fixture.name}`,
     payload: fixture.payload,
+    received_at: "2026-07-20T17:00:01Z",
   }
 }
 
@@ -66,10 +67,36 @@ function repository(
     applyRepositories: vi.fn().mockResolvedValue(0),
     getDelivery: vi.fn().mockResolvedValue(storedDelivery),
     isActive: vi.fn().mockResolvedValue(true),
+    resolveParticipants: vi.fn().mockResolvedValue(undefined),
+    startBackfills: vi.fn().mockResolvedValue(undefined),
   }
 }
 
 describe("GitHub installation lifecycle processor", () => {
+  it.each([null, 12345])("acknowledges ping without installation work (%s)", async (installationId) => {
+    const lifecycleRepository = repository({
+      action: null,
+      event_name: "ping",
+      github_installation_id: installationId,
+      id: "delivery-ping",
+      payload: { zen: "Keep it logically awesome." },
+    })
+    const processor = createGitHubInstallationProcessor(lifecycleRepository)
+
+    await expect(processor("delivery-ping")).resolves.toEqual({
+      disposition: "ignored",
+      event: "ping",
+    })
+    expect(lifecycleRepository.isActive).not.toHaveBeenCalled()
+    expect(lifecycleRepository.apply).not.toHaveBeenCalled()
+    expect(lifecycleRepository.applyRepositories).not.toHaveBeenCalled()
+    expect(lifecycleRepository.applyPullRequest).not.toHaveBeenCalled()
+    expect(lifecycleRepository.applyReviewContribution).not.toHaveBeenCalled()
+    expect(lifecycleRepository.applyReviewDismissal).not.toHaveBeenCalled()
+    expect(lifecycleRepository.applyReviewComment).not.toHaveBeenCalled()
+    expect(lifecycleRepository.resolveParticipants).not.toHaveBeenCalled()
+  })
+
   it.each(fixtures)("normalizes the $name fixture", (fixture) => {
     const change = normalizeInstallationLifecycle(delivery(fixture))
 
@@ -102,6 +129,7 @@ describe("GitHub installation lifecycle processor", () => {
     expect(lifecycleRepository.apply).toHaveBeenCalledWith(
       expect.objectContaining({ action: "created", githubInstallationId: 12345 }),
     )
+    expect(lifecycleRepository.startBackfills).toHaveBeenCalledWith(12345)
     expect(lifecycleRepository.applyRepositories).toHaveBeenCalledWith(
       expect.objectContaining({
         githubInstallationId: 12345,
@@ -136,6 +164,7 @@ describe("GitHub installation lifecycle processor", () => {
       repositories_applied: 1,
     })
     expect(lifecycleRepository.isActive).toHaveBeenCalledWith(12345)
+    expect(lifecycleRepository.startBackfills).toHaveBeenCalledWith(12345)
     expect(lifecycleRepository.applyRepositories).toHaveBeenCalledWith(
       expect.objectContaining({
         repositories: [expect.objectContaining({ active: true })],
@@ -160,6 +189,8 @@ describe("GitHub installation lifecycle processor", () => {
     })
     expect(lifecycleRepository.apply).not.toHaveBeenCalled()
     expect(lifecycleRepository.applyRepositories).not.toHaveBeenCalled()
+    expect(lifecycleRepository.resolveParticipants).not.toHaveBeenCalled()
+    expect(lifecycleRepository.startBackfills).not.toHaveBeenCalled()
   })
 
   it("rejects malformed review events", async () => {
@@ -173,6 +204,35 @@ describe("GitHub installation lifecycle processor", () => {
     const processor = createGitHubInstallationProcessor(lifecycleRepository)
 
     await expect(processor("delivery-review")).rejects.toThrow("missing repository")
+  })
+
+  it("does not resolve actors when the repository is excluded", async () => {
+    const fixture = JSON.parse(readFileSync(
+      new URL("./fixtures/review-contributions.json", import.meta.url), "utf8",
+    ))[0] as Fixture
+    const lifecycleRepository = repository(delivery(fixture))
+    vi.mocked(lifecycleRepository.applyReviewContribution).mockResolvedValue({
+      contribution_id: null,
+      disposition: "ignored_repository",
+    })
+    await createGitHubInstallationProcessor(lifecycleRepository)("delivery-ignored")
+    expect(lifecycleRepository.resolveParticipants).not.toHaveBeenCalled()
+  })
+
+  it("retries participant resolution even when the review fact already exists", async () => {
+    const fixture = JSON.parse(readFileSync(
+      new URL("./fixtures/review-contributions.json", import.meta.url), "utf8",
+    ))[0] as Fixture
+    const lifecycleRepository = repository(delivery(fixture))
+    vi.mocked(lifecycleRepository.applyReviewContribution).mockResolvedValue({
+      contribution_id: "existing-review",
+      disposition: "unchanged",
+    })
+    vi.mocked(lifecycleRepository.resolveParticipants).mockRejectedValueOnce(new Error("temporary failure"))
+    const process = createGitHubInstallationProcessor(lifecycleRepository)
+    await expect(process("delivery-retry")).rejects.toThrow("temporary failure")
+    await expect(process("delivery-retry")).resolves.toMatchObject({ disposition: "unchanged" })
+    expect(lifecycleRepository.resolveParticipants).toHaveBeenCalledTimes(2)
   })
 
   it("applies a normalized formal review contribution", async () => {
@@ -189,6 +249,7 @@ describe("GitHub installation lifecycle processor", () => {
       contribution_id: "contribution-1",
       disposition: "inserted",
     })
+    expect(lifecycleRepository.resolveParticipants).toHaveBeenCalledWith("delivery-approval")
     expect(lifecycleRepository.applyReviewContribution).toHaveBeenCalledWith(
       expect.objectContaining({
         githubPullRequestId: 9001,
@@ -264,6 +325,7 @@ describe("GitHub installation lifecycle processor", () => {
       disposition: "inserted",
       pull_request_id: "pull-request-1",
     })
+    expect(lifecycleRepository.resolveParticipants).toHaveBeenCalledWith("delivery-draft-opened")
     expect(lifecycleRepository.applyPullRequest).toHaveBeenCalledWith(
       expect.objectContaining({
         action: "opened",
@@ -331,4 +393,12 @@ describe("GitHub installation lifecycle processor", () => {
     )
     expect(lifecycleRepository.isActive).not.toHaveBeenCalled()
   })
+})
+
+it('never starts imports after the lifecycle gate reports a purged installation', async () => {
+  const repo=repository(delivery(fixtures[0]!))
+  repo.apply.mockResolvedValue({disposition:'stale',installation_status:'deleted',organization_id:null,installation_id:null})
+  await createGitHubInstallationProcessor(repo)('late-delivery')
+  expect(repo.applyRepositories).not.toHaveBeenCalled()
+  expect(repo.startBackfills).not.toHaveBeenCalled()
 })

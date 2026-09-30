@@ -33,6 +33,7 @@ function delivery(fixture: Fixture): StoredGitHubDelivery {
     github_installation_id: 12345,
     id: `delivery-${fixture.name}`,
     payload: fixture.payload,
+    received_at: "2026-07-20T17:00:01Z",
   }
 }
 
@@ -114,7 +115,7 @@ describe("GitHub formal review dismissal normalization", () => {
     await expect(normalizeReviewDismissal(delivery(dismissalFixture))).resolves
       .toMatchObject({
         dismissal: {
-          dismissed_at: "2026-07-20T17:00:00Z",
+          dismissed_at: "2026-07-20T17:00:01Z",
           dismissed_by_github_user_id: 7010,
           reviewer_github_user_id: 7002,
           source_github_id: 5001,
@@ -124,6 +125,18 @@ describe("GitHub formal review dismissal normalization", () => {
         githubPullRequestId: 9001,
         githubRepositoryId: 1001,
       })
+  })
+
+  it("uses durable receipt time when PR.updated_at still equals approval submission", async () => {
+    const event = delivery(structuredClone(dismissalFixture))
+    const review = event.payload.review as Record<string, unknown>
+    const pr = event.payload.pull_request as Record<string, unknown>
+    pr.updated_at = review.submitted_at
+    const result = await normalizeReviewDismissal(event)
+    expect(result?.dismissal.dismissed_at).toBe(event.received_at)
+    expect(result?.dismissal.dismissed_at).not.toBe(review.submitted_at)
+    delete event.received_at
+    await expect(normalizeReviewDismissal(event)).rejects.toThrow("received_at")
   })
 
   it("gives duplicate dismissal payloads the same source version", async () => {

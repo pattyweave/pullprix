@@ -1,0 +1,16 @@
+export const recoveryMessages: Record<string, string> = {
+  sign_in_again: 'Sign in with GitHub to view this team.',
+  access_denied: 'Your team access could not be verified. Your membership or access to a selected repository may have changed. Check your account or ask an organization owner to confirm access.',
+  permission_required: 'The GitHub App needs Members read-only access. Ask an organization owner to approve the updated permissions in GitHub, then try again.',
+  waiting_for_webhook: 'GitHub has confirmed your access. We’re waiting for your installation to arrive. This page will check again automatically.',
+  installation_unavailable: 'This installation is unavailable or suspended. Ask its owner to check the GitHub App installation and resume or reconnect it, then try again.',
+  data_changed: 'Team data changed while loading. We’ll check again shortly, or you can refresh now.',
+  administrator_required: 'Only an organization or installation owner can retry imports. Refresh to return to your team.',
+  no_active_season: 'There is no active season to display right now. No setup action is needed from your team. Check again shortly.',
+  github_busy: 'GitHub is limiting requests. Wait a few minutes, then try again.',
+  github_unavailable: 'We couldn’t reach GitHub to check your access. Please try again shortly.',
+  verification_limit: 'We couldn’t finish checking your repository access. Ask an organization owner to check the app’s selected repositories, then try again.',
+  invalid_product_data: 'We couldn’t load a consistent view of your team. Please try again shortly.',
+  product_unavailable: 'Team data is temporarily unavailable. Please try again shortly.',
+  setup_unavailable: 'We couldn’t check your team setup. Please try again shortly.',
+}

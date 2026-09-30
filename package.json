@@ -13,7 +13,9 @@
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
     "supabase:test-db": "supabase test db",
-    "supabase:functions": "supabase functions serve"
+    "supabase:test-scoring": "node --experimental-strip-types supabase/tests/scoring-bridge.mjs",
+    "supabase:functions": "supabase functions serve",
+    "supabase:test-season": "node --experimental-strip-types supabase/tests/season-rehearsal.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.2.9",

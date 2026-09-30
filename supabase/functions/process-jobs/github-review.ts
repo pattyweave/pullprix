@@ -11,7 +11,7 @@ export type GitHubReviewContributionChange = {
     commit_id: string
     html_url: string
     occurred_at: string
-    review_state: "approved" | "changes_requested" | "commented"
+    review_state: "approved" | "changes_requested" | "commented" | "dismissed"
     source_github_id: number
     source_version: string
   }
@@ -117,10 +117,9 @@ export async function normalizeReviewDismissal(
   const sourceGithubId = positiveInteger(review.id, "review.id")
   const reviewerGithubUserId = positiveInteger(reviewer.id, "review.user.id")
   const dismissedByGithubUserId = positiveInteger(sender.id, "sender.id")
-  const dismissedAt = timestamp(
-    pullRequest.updated_at,
-    "pull_request.updated_at",
-  )
+  // GitHub supplies no dismissal time; retain our durable receipt observation.
+  // The PR snapshot may still carry the original approval timestamp.
+  const dismissedAt = timestamp(delivery.received_at, "received_at")
 
   return {
     dismissal: {
@@ -144,6 +143,7 @@ export async function normalizeReviewDismissal(
 
 export async function normalizeReviewContribution(
   delivery: StoredGitHubDelivery,
+  allowDismissedSnapshot = false,
 ): Promise<GitHubReviewContributionChange | null> {
   if (!isReviewContributionEvent(delivery)) return null
 
@@ -153,7 +153,7 @@ export async function normalizeReviewContribution(
   const review = object(delivery.payload.review, "review")
   const actor = object(review.user, "review.user")
   const rawState = string(review.state, "review.state").toLowerCase()
-  if (!STATES.has(rawState)) {
+  if (!STATES.has(rawState) && !(allowDismissedSnapshot && rawState === "dismissed")) {
     throw new Error("GitHub review payload has invalid review.state")
   }
 

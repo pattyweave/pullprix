@@ -3,9 +3,16 @@ import type {
   BackgroundJobRepository,
 } from "./repository.ts"
 import { redactForLog } from "../_shared/redact.ts"
+import { GitHubRateLimitError } from "../_shared/github/rate-limit.ts"
 
 type ProcessJobsDependencies = {
   processGitHubDelivery: (deliveryId: string) => Promise<Record<string, unknown>>
+  processBackfill?: (payload: Record<string, unknown>) => Promise<Record<string, unknown>>
+  processReconciliation?: (payload: Record<string, unknown>) => Promise<Record<string, unknown>>
+  processScoring?: (payload: Record<string, unknown>) => Promise<Record<string, unknown>>
+  enqueueScoring?: () => Promise<number>
+  deleteUninstalledData?: () => Promise<number>
+  finalizeSeasons?: () => Promise<number>
   repository: BackgroundJobRepository
   secretKey: string
 }
@@ -36,6 +43,16 @@ async function processJob(
       throw new Error("GitHub delivery job is missing delivery_id")
     }
     return dependencies.processGitHubDelivery(deliveryId)
+  }
+
+  if (job.job_type === "backfill.repository-page" && dependencies.processBackfill) {
+    return dependencies.processBackfill(job.payload)
+  }
+  if (job.job_type === "github.reconcile-installation" && dependencies.processReconciliation) {
+    return dependencies.processReconciliation(job.payload)
+  }
+  if (job.job_type === "scoring.pull-request" && dependencies.processScoring) {
+    return dependencies.processScoring(job.payload)
   }
 
   throw new Error(`No processor registered for job type ${job.job_type}`)
@@ -86,11 +103,18 @@ export async function handleProcessJobsRequest(
   }
 
   try {
-    const jobs = await dependencies.repository.claim(5, 60)
+    const deadline = Date.now() + 40_000
+    let claimed = 0
     let succeeded = 0
     let failed = 0
 
-    for (const job of jobs) {
+    // Claim just before processing; later pages need not wait for another cron.
+    while (claimed < 10 && Date.now() < deadline) {
+      await dependencies.enqueueScoring?.()
+      const jobs = await dependencies.repository.claim(1, 120)
+      if (!jobs.length) break
+      const job = jobs[0]
+      claimed += 1
       try {
         const result = await processJob(job, dependencies)
         if (await dependencies.repository.complete(job, result)) {
@@ -99,13 +123,31 @@ export async function handleProcessJobsRequest(
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown job error"
-        await dependencies.repository.fail(job, message)
+        if (error instanceof GitHubRateLimitError) {
+          const limit = error.rateLimit
+          const resetDelay = limit.remaining === 0 && limit.resetAt
+            ? Math.ceil((Date.parse(limit.resetAt) - Date.now()) / 1000) : 60
+          const delay = Math.min(3600, Math.max(1, limit.retryAfterSeconds ?? resetDelay))
+          await dependencies.repository.fail(job, message, delay)
+        } else {
+          await dependencies.repository.fail(job, message)
+        }
         failed += 1
         log("error", "background_job_failed", job)
       }
     }
 
-    return json({ claimed: jobs.length, failed, succeeded }, 200)
+    if (dependencies.deleteUninstalledData) {
+      try { await dependencies.deleteUninstalledData() }
+      catch { log("error", "data_deletion_failed") }
+    }
+    // Independent maintenance: errors retry on the next existing minute tick and
+    // cannot undo ingestion or delay calendar-based next-season activation.
+    if (dependencies.finalizeSeasons) {
+      try { await dependencies.finalizeSeasons() }
+      catch { log("error", "season_finalization_failed") }
+    }
+    return json({ claimed, failed, succeeded }, 200)
   } catch {
     log("error", "background_job_batch_failed")
     return json({ error: "job_batch_failed" }, 500)

@@ -35,7 +35,7 @@ describe("GitHub installation token provider", () => {
     expect(fetchImplementation).toHaveBeenCalledTimes(1)
     const options = fetchImplementation.mock.calls[0]?.[1] as RequestInit
     expect(JSON.parse(String(options.body))).toEqual({
-      permissions: { pull_requests: "read" },
+      permissions: { pull_requests: "read", contents: "read" },
       repository_ids: [1001, 1002],
     })
     expect(
@@ -84,7 +84,7 @@ describe("GitHub installation token provider", () => {
 
     const options = fetchImplementation.mock.calls[0]?.[1] as RequestInit
     expect(JSON.parse(String(options.body))).toEqual({
-      permissions: { pull_requests: "read" },
+      permissions: { pull_requests: "read", contents: "read" },
     })
   })
 

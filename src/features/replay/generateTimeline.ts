@@ -1,3 +1,4 @@
+import { pointsToLaps } from '../track/points'
 import { drivers } from '@/features/season'
 import type { DriverStanding, ReviewHealth } from '@/features/season'
 
@@ -83,14 +84,13 @@ function buildStandings(
  * enough of a points lead, literally laps the field. `progress` can exceed 1;
  * the path sampler wraps it onto the loop.
  */
-const POINTS_PER_LAP = 90 // tuned so the season leader runs ~5 laps total
 
 function buildPositions(
   cumulative: { id: string; points: number }[],
 ): TrackPosition[] {
   return cumulative.map((c) => ({
     driverId: c.id,
-    progress: c.points / POINTS_PER_LAP,
+    progress: pointsToLaps(c.points),
   }))
 }
 

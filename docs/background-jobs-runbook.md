@@ -1,6 +1,6 @@
 # Background Jobs Runbook
 
-Roadmap tickets: `PP-013`, `PP-014`, `PP-022`, `PP-023`, `PP-024`
+Roadmap tickets: `PP-013`, `PP-014`, `PP-022`, `PP-023`, `PP-024`, `PP-035`, `PP-036`, `PP-041`
 
 Pull Prix uses one durable Supabase Queue named `pull_prix_jobs`. PostgreSQL
 stores the authoritative job record in `public.background_jobs`; the queue
@@ -8,8 +8,8 @@ message contains only its ID and envelope version.
 
 ## Hosted setup
 
-Deploy the `process-jobs` Edge Function, create a named Supabase secret API key
-called `automations`, and store the function URL and that key in Vault:
+Deploy the `process-jobs` Edge Function and store the project URL and the
+server key selected by the worker in Vault:
 
 ```sql
 select vault.create_secret(
@@ -18,33 +18,44 @@ select vault.create_secret(
 );
 
 select vault.create_secret(
-  'YOUR_AUTOMATIONS_SECRET_KEY',
+  'YOUR_WORKER_SERVER_KEY',
   'pull_prix_automation_secret_key'
 );
 ```
 
 The committed Cron job runs every minute. It safely makes no request until both
-Vault values exist. The key must also be available to the function as the named
-`automations` entry in `SUPABASE_SECRET_KEYS`; local Supabase uses its injected
-`SUPABASE_SECRET_KEY` fallback.
+Vault values exist. The Vault key must exactly match the key selected by
+`readSupabaseServiceEnvironment`: `SUPABASE_SECRET_KEY`, then
+`SUPABASE_SERVICE_ROLE_KEY`, then the `automations` (or `default`) entry in
+`SUPABASE_SECRET_KEYS`. Creating a named key alone does not override an injected
+direct key.
+
+The development project `tfniygqihihmcuitydde` has both Vault values configured.
+As of 2026-09-27, manual worker authentication is verified with the project's
+named `default` server secret key; the legacy `service_role` key returns 401.
+The existing Vault/cron authentication already works and was not changed.
+No additional hosting service or paid infrastructure was provisioned.
+
+PP-036 adds a daily SQL scheduler for known-installation reconciliation, using
+this same queue and worker. See [github-reconciliation.md](github-reconciliation.md)
+for current deployment status, recent-history repair, inspection, and replay.
+
+PP-041 schedules dirty PRs as `scoring.pull-request` jobs inside the same worker
+invocation. `pending` scoring context is a successful, explained computation,
+not a failed job. See [reversible-scoring.md](reversible-scoring.md) for score
+components, corrections, targeted/full recomputation, and the live-award test.
 
 ## Enqueue work
 
 Only trusted Edge Functions or founder SQL may invoke the enqueue function:
 
 ```sql
-select * from public.enqueue_background_job(
-  p_job_type := 'backfill.repository-page',
-  p_idempotency_key := 'backfill:REPOSITORY_ID:CURSOR_OR_START',
-  p_payload := jsonb_build_object(
-    'repository_id', 'REPOSITORY_ID',
-    'cursor', null,
-    'page', 1
-  ),
-  p_organization_id := 'ORGANIZATION_ID',
-  p_max_attempts := 3
-);
+select public.start_installation_backfills(GITHUB_INSTALLATION_ID);
 ```
+
+The backfill helper starts missing imports or resumes failed ones. Do not handcraft
+page jobs: their payload contains a repository ID, run ID, and cursor version.
+See [repository-backfill.md](repository-backfill.md) for progress and recovery.
 
 Use one job per bounded API page. A successful page processor enqueues the next
 cursor with a new deterministic idempotency key. A retry keeps the same payload
@@ -141,8 +152,15 @@ select * from public.replay_webhook_delivery('GITHUB_DELIVERY_ID');
 ## Inspect installation access
 
 Installation lifecycle processing recognizes created, new-permissions,
-suspend, unsuspend, delete, and account-rename events. GitHub's installation
-`updated_at` value prevents an older delivery from replacing newer state.
+suspend, unsuspend, delete, and account-rename events. GitHub connectivity
+`ping` events complete as an ignored no-op, even before an installation exists.
+GitHub's installation `updated_at` orders non-deletion changes. Deletion is
+terminal for that installation ID, even if GitHub reuses an equal or older
+timestamp. A subsequent reinstall has a different installation ID.
+
+Organization status reflects its remaining installations: active if any are
+active, otherwise suspended if any are suspended, otherwise deleted. Thus a
+late deletion of an old installation cannot disable its active replacement.
 
 ```sql
 select

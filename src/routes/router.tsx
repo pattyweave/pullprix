@@ -1,10 +1,13 @@
+import { privacyRoute, termsRoute, pilotRoute } from './legal'
 import { createRouter } from '@tanstack/react-router'
 
+import { installationCallbackRoute, teamSetupRoute, teamHistoryRoute } from './installation'
+import { signInRoute, authCallbackRoute } from './sign-in'
 import { demoRoute } from './demo'
 import { indexRoute } from './index'
 import { rootRoute } from './root'
 
-const routeTree = rootRoute.addChildren([indexRoute, demoRoute])
+const routeTree = rootRoute.addChildren([privacyRoute, termsRoute, pilotRoute, indexRoute, demoRoute, signInRoute, authCallbackRoute, installationCallbackRoute, teamSetupRoute, teamHistoryRoute])
 
 export const router = createRouter({ routeTree })
 

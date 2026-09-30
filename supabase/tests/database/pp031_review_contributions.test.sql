@@ -382,10 +382,11 @@ insert into public.organization_memberships (
   '10000000-0000-0000-0000-000000000001'
 );
 
+insert into auth.sessions(id,user_id) values('50000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000001');
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
-  '{"sub":"10000000-0000-0000-0000-000000000001","role":"authenticated"}',
+  '{"sub":"10000000-0000-0000-0000-000000000001","role":"authenticated","session_id":"50000000-0000-0000-0000-000000000001"}',
   true
 );
 select is(

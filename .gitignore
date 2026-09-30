@@ -30,3 +30,6 @@ supabase/.temp
 *.njsproj
 *.sln
 *.sw?
+
+# Vercel local project linkage and downloaded environment
+.vercel

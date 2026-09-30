@@ -26,6 +26,26 @@ export function createGitHubInstallationRepository(
   }
 
   return {
+    async startBackfills(githubInstallationId) {
+      const response = await fetchImplementation(`${supabaseUrl}/rest/v1/rpc/start_installation_backfills`, {
+        method: "POST", headers, body: JSON.stringify({ p_github_installation_id: githubInstallationId }),
+      })
+      if (!response.ok) throw new Error(`Backfill scheduling failed with status ${response.status}`)
+    },
+    async resolveParticipants(deliveryId) {
+      const response = await fetchImplementation(
+        `${supabaseUrl}/rest/v1/rpc/resolve_github_delivery_participants`,
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ p_delivery_id: deliveryId }),
+        },
+      )
+      if (!response.ok) {
+        throw new Error(`Participant resolution failed with status ${response.status}`)
+      }
+    },
+
     async getDelivery(deliveryId) {
       const response = await fetchImplementation(
         `${supabaseUrl}/rest/v1/rpc/get_github_delivery_for_processing`,

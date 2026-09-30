@@ -11,8 +11,8 @@ import { cn } from '@/lib/utils'
 export interface TimingRow {
   /** Stable identity for selection + animation. */
   id: string
-  /** 1-based running position. */
-  position: number
+  /** 1-based shared rank, or null before the first earned contribution. */
+  position: number | null
   /** Driver initials / short code shown as the primary label, e.g. "ADA". */
   initials: string
   /** Optional team color for the leading stripe. */
@@ -139,7 +139,7 @@ export function TimingTower({
                 selected ? 'text-text' : 'text-text-faint',
               )}
             >
-              {row.position}
+              {row.position ?? '—'}
             </span>
 
             {/* Initials — primary label, uppercase */}

@@ -9,7 +9,9 @@ read data from repositories authorized for a Pull Prix installation.
    service-only `get_github_installation_auth_scope` database function.
 2. Sign a short-lived GitHub App JWT with `GITHUB_APP_PRIVATE_KEY`.
 3. Exchange that JWT for an installation access token with only
-   `pull_requests: read`.
+   `pull_requests: read` and `contents: read`. The latter is used for branch
+   metadata by PP-041; no source-content endpoints are called. Requesting it on
+   the token is necessary even after the installation approves that permission.
 4. For a `selected` installation, request access only to the active
    `repository_ids`. For an `all` installation, let GitHub restrict the token
    to repositories authorized for that installation.

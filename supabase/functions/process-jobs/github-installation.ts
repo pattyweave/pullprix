@@ -38,6 +38,7 @@ export type StoredGitHubDelivery = {
   github_installation_id: number | null
   id: string
   payload: Record<string, unknown>
+  received_at?: string
 }
 
 export type InstallationLifecycleChange = {
@@ -81,6 +82,8 @@ export interface GitHubInstallationRepository {
   ): Promise<GitHubReviewDismissalResult>
   getDelivery(deliveryId: string): Promise<StoredGitHubDelivery>
   isActive(githubInstallationId: number): Promise<boolean>
+  resolveParticipants(deliveryId: string): Promise<void>
+  startBackfills(githubInstallationId: number): Promise<void>
 }
 
 const INSTALLATION_ACTIONS = new Set([
@@ -170,6 +173,11 @@ export function createGitHubInstallationProcessor(
 ) {
   return async (deliveryId: string) => {
     const delivery = await repository.getDelivery(deliveryId)
+    // GitHub sends this connectivity check before an installation exists.
+    if (delivery.event_name === "ping") {
+      return { disposition: "ignored", event: "ping" }
+    }
+
     const isLifecycleEvent =
       delivery.event_name === "installation" ||
       delivery.event_name === "installation_target"
@@ -178,10 +186,13 @@ export function createGitHubInstallationProcessor(
       if (!change) return { disposition: "ignored", event: delivery.event_name }
 
       const result = await repository.apply(change)
+      // Deleted and purged installations must never schedule fresh imports.
+      if (result.installation_status === 'deleted') return { ...result, repositories_applied: 0 }
       const repositoryChange = normalizeRepositoryChanges(delivery)
       const repositoriesApplied = repositoryChange
         ? await repository.applyRepositories(repositoryChange)
         : 0
+      if (repositoryChange) await repository.startBackfills(change.githubInstallationId)
 
       return {
         disposition: result.disposition,
@@ -198,9 +209,11 @@ export function createGitHubInstallationProcessor(
         return { disposition: "ignored", reason: "installation_inactive" }
       }
 
+      const repositoriesApplied = await repository.applyRepositories(change)
+      await repository.startBackfills(change.githubInstallationId)
       return {
         disposition: "applied",
-        repositories_applied: await repository.applyRepositories(change),
+        repositories_applied: repositoriesApplied,
       }
     }
 
@@ -210,7 +223,9 @@ export function createGitHubInstallationProcessor(
         return { disposition: "ignored", reason: "installation_inactive" }
       }
 
-      return repository.applyPullRequest(change)
+      const result = await repository.applyPullRequest(change)
+      if (result.pull_request_id) await repository.resolveParticipants(deliveryId)
+      return result
     }
 
     if (isReviewContributionEvent(delivery)) {
@@ -220,7 +235,9 @@ export function createGitHubInstallationProcessor(
         return { disposition: "ignored", reason: "installation_inactive" }
       }
 
-      return repository.applyReviewContribution(change)
+      const result = await repository.applyReviewContribution(change)
+      if (result.contribution_id) await repository.resolveParticipants(deliveryId)
+      return result
     }
 
     if (isReviewDismissalEvent(delivery)) {

@@ -191,7 +191,8 @@ Requirements:
 - Delivery processing must be idempotent.
 - Redelivery must not award points twice.
 - Out-of-order deliveries must not corrupt current state.
-- Deleted, edited, or dismissed activity must be reversible.
+- Deleted/ineligible activity must be reversible and edits recomputable.
+  Dismissed approvals retain earned work credit while GitHub validity changes.
 - One failing delivery must not block unrelated installations.
 - Logs must include delivery ID and installation ID without logging secrets.
 - Raw payload retention should be time-limited and justified.
@@ -423,7 +424,8 @@ Conversely, scoring experiments should not require webhook reingestion.
 - Never reward self-review.
 - Avoid making raw comment count a quality proxy.
 - Prevent approvals after trivial or automated changes from dominating.
-- Allow dismissed or deleted work to remove credit.
+- Allow deleted/ineligible work to remove credit; every approval dismissal
+  preserves earned credit (2026-09-28 scoring clarification).
 - Make difficult or under-covered work eligible for bonuses without forcing a
   specific implementation immediately.
 - Keep team goals available alongside individual standings.

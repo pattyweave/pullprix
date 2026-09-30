@@ -38,6 +38,12 @@ policy.
 - Participant eligibility, author exclusion, review-credit windows, and season
   boundaries are applied by scoring rather than the webhook normalizer.
 
+PP-034 now resolves author/reviewer identities after canonical persistence and
+provides `review_participant_exclusion_reason` for the future scorer. This does
+not alter the review's facts or its `effective` flag. See
+[participant resolution](participant-resolution.md) for the boundary between
+identity eligibility and the remaining scoring rules.
+
 ## Dismissed reviews
 
 PP-032 makes the existing contribution ineffective instead of deleting it.
@@ -52,8 +58,9 @@ The source version makes duplicate dismissal deliveries a no-op. A late edit
 cannot make a dismissed contribution effective again.
 
 The affected pull request receives a
-`scoring_recalculation_requested_at` timestamp. PP-040 can consume and clear
-that marker when scoring exists. PP-032 does not enqueue an unimplemented job
+`scoring_recalculation_requested_at` timestamp. PP-041's persistent recomputation
+worker will consume and clear that marker using the PP-040 pure engine.
+PP-032 does not enqueue an unimplemented job
 or calculate points inside the webhook worker.
 
 The signed webhook delivery remains the detailed audit record. Dismissal

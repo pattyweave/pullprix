@@ -39,7 +39,8 @@ This means:
 - The reviewer is not the author.
 - Review work is still necessary.
 - The review is a qualifying formal GitHub review.
-- The review has not been deleted or dismissed.
+- The review has not been deleted or invalidated by eligibility correction.
+  Dismissed approvals retain their earned useful-review credit.
 
 Follow-through bonuses do not create another useful-review count.
 
@@ -112,7 +113,8 @@ Display both counts and percentages so roster changes remain understandable.
 - Self-reviews.
 - Redundant reviews after scoring closes.
 - Draft PR reviews.
-- Deleted or dismissed reviews.
+- Deleted or otherwise ineligible reviews. Dismissal alone does not exclude
+  previously earned approval work.
 
 ## Core metric 2 — Review load spread
 
@@ -351,8 +353,9 @@ count of distinct useful reviewer–PR pairs
 - Count one useful review per reviewer per PR.
 - A follow-through review does not create another useful-review count.
 - Additional comments do not create additional reviews.
-- Reviews reversed through deletion, dismissal, or eligibility correction are
-  removed.
+- Reviews reversed through deletion or eligibility correction are removed.
+  Dismissal alone does not remove credit for approved review work (2026-09-28
+  clarification); GitHub's current approval validity is a separate fact.
 
 ### Comparison
 
@@ -512,3 +515,45 @@ Participant metric:
 Configuration:
   None
 ```
+
+
+## PP-043 implementation — 2026-09-28
+
+`supabase/functions/_shared/review-health/v1.ts` provides the pure
+`calculateReviewHealth(input, asOf)` calculation. It derives participation,
+review load spread, individual shares, first-review median, aging queue,
+useful-review totals and normalized weekly rates. Complete-day windows use UTC;
+current season begins at the later of season start and organization entry.
+A PR contributes one first-review timing sample; later reviewers cannot become
+another first-review sample in a subsequent window. Unknown readiness is reported
+separately and never replaced with an invented duration.
+
+The deployed server-only RPC `get_organization_review_health_input(uuid)` loads
+organization-scoped canonical PRs, the activity roster and verified useful work
+from effective base components. Comments, follow-through and rescue bonuses do
+not increase review counts. Known deletions, self-reviews and author exclusions
+are filtered even before asynchronous score recomputation catches up; reviewer
+eligibility is applied by the calculator. Earned dismissed approval work remains.
+Only service-role callers can use the loader; product endpoints must authorize
+organization membership in PP-060. No frontend/demo changes or new jobs.
+
+Current metrics expose pending scoring work and incomplete readiness as partial.
+Historical comparisons require verified coverage of their complete window and
+no unresolved scoring work. Mere ingestion of old review snapshots does not
+prove historical eligibility. Baseline and recent comparisons are therefore
+unavailable in the sandbox, rather than reported as zero. Load spread is omitted
+for fewer than six eligible participants and for no useful work.
+
+Average daily aging is calculated only when all complete UTC days have verified
+end-of-day queue snapshots. The current loader supplies no such historical
+snapshots, so that comparison is explicitly unavailable. It does not compare a
+current queue count to a historical total. Historical queue capture/reconstruction
+remains a data-availability limitation; the aggregate accepts verified snapshots
+when available, without requiring a new service now.
+
+Validation: 255 application tests, 525 database assertions, focused TypeScript
+checks and the SQL/scoring/ledger/standings/health integration bridge pass.
+Migration `20260928030000_pp043_review_health_input.sql` is deployed.
+Live sandbox: one useful review, 1/3 participation (33.3%), median first review
+484,000 ms (8m 4s), zero aging PRs. One known pre-gate-evidence PR remains pending;
+baseline/recent comparisons are unavailable. The eight-point ledger is untouched.

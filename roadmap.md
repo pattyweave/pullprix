@@ -258,7 +258,6 @@ Required tickets:
 - PP-055 — Private team entry link
 - PP-060 — Product-domain APIs
 - PP-061 — Real-data frontend provider with demo mode
-- PP-062 — Score explanations
 - PP-064 — Critical loading and failure states
 
 Conditional tickets:
@@ -275,6 +274,8 @@ Concierge reductions:
 - `PP-053` routes the organization into the already-active global season; it
   does not present a launch button.
 - `PP-054` needs only installer/manager and participant roles.
+- `PP-062` is deferred; the existing scoring rules summary and founder-assisted
+  explanations cover MVP score questions.
 - `PP-064` must cover backfilling, no activity, missing permissions, suspended
   installation, and backend failure.
 - `PP-065` can be replaced by the founder-provided finale report during the
@@ -316,6 +317,7 @@ Concierge exit condition:
 - PP-033 — Diff-comment normalization, unless required by scoring philosophy
 - PP-036 — Scheduled reconciliation
 - PP-044 — Next-review recommendation engine
+- PP-062 — Detailed participant score explanations (deferred by user after UI preview)
 - PP-063 — Recommendation action
 - PP-065 — Full manager health view
 - PP-071 — Polished global season reveal
@@ -343,7 +345,7 @@ Build the authentic scoring loop
 PP-040..043 + PP-045..046 + PP-070
     ↓
 Connect the private team experience
-PP-050..055 + PP-060..062 + PP-064
+PP-050..055 + PP-060..061 + PP-064
     ↓
 Make it safe enough for real teams
 PP-080..081 + PP-085
@@ -846,7 +848,7 @@ Track which repositories each installation currently authorizes.
 
 ## PP-025 — Implement installation-token authentication
 
-- Status: `IN PROGRESS` — implementation complete; sandbox verification awaits development key rotation
+- Status: `DONE` — recreated app credentials verified against the sandbox on 2026-09-26
 - Priority: `P0`
 - Dependencies: PP-011, PP-020, PP-023
 
@@ -932,7 +934,7 @@ Convert formal GitHub reviews into canonical, theme-independent contributions.
 
 ### Outcome
 
-Make review credit reversible when GitHub invalidates a review.
+Record GitHub review validity independently of earned review-work credit.
 
 ### Scope
 
@@ -943,10 +945,12 @@ Make review credit reversible when GitHub invalidates a review.
 
 ### Acceptance criteria
 
-- A dismissed review becomes ineffective.
+- A dismissed review becomes ineffective for GitHub approval validity. Earned
+  approval points survive every dismissal (2026-09-28 clarification).
 - Reprocessing the event is idempotent.
 - Downstream scoring is notified without scoring inside the handler.
-- Tests prove prior credit can be removed.
+- Tests prove canonical validity changes without duplicating facts; scoring
+  handles approval-point preservation separately.
 
 ## PP-033 — Normalize review comments
 
@@ -974,7 +978,7 @@ Record review comments without turning raw comment volume into automatic points.
 
 ## PP-034 — Implement participant resolution and exclusions
 
-- Status: `BACKLOG`
+- Status: `DONE` — deployed and verified against retained sandbox PR/review deliveries on 2026-09-26
 - Priority: `P0`
 - Dependencies: PP-002, PP-012, PP-031
 
@@ -988,7 +992,7 @@ Map GitHub actors to eligible Pull Prix participants.
 - Organization eligibility.
 - Bot and service-account detection.
 - Self-review exclusion.
-- Manager overrides required by PP-002.
+- Internal operator corrections allowed by PP-002 (no manager roster configuration).
 
 ### Acceptance criteria
 
@@ -997,9 +1001,26 @@ Map GitHub actors to eligible Pull Prix participants.
 - Ineligible users' facts remain auditable without affecting competition.
 - Eligibility changes do not destroy historical facts.
 
+### Implementation and verification
+
+- [Participant resolution](docs/participant-resolution.md) documents the worker
+  integration, activity-derived roster, corrections, and future scoring gate.
+- The resolver uses stored signed deliveries and canonical PR/review IDs; it
+  does not call GitHub or grant authentication membership.
+- Bot/service/deleted/suspended identity exclusions and self-review checks
+  preserve the original contribution records. Initial backfill remains PP-035.
+- Local verification: 123 application tests and 353 database assertions pass,
+  including 50 participant-resolution assertions. Build, focused worker type
+  checks, and lint pass (existing frontend warnings only).
+- Hosted verification: both replay jobs succeeded on their first attempt;
+  `pattyweave` and `Hollistud` became active, eligible participants. The merged
+  PR stayed closed, its single approval stayed effective, and no authentication
+  memberships were created. The approval passes the participant-only gate;
+  point scoring remains PP-040.
+
 ## PP-035 — Implement initial repository backfill
 
-- Status: `BACKLOG`
+- Status: `DONE` — deployed and live sandbox backfill verified on 2026-09-27
 - Priority: `P0`
 - Dependencies: PP-024, PP-025, PP-030, PP-031, PP-033, PP-034
 
@@ -1023,9 +1044,17 @@ Populate a newly installed organization with enough history to preview a season.
 - One failing repository does not block the organization.
 - Backfilled facts use the same normalization path as webhooks.
 
+### Implementation notes
+
+- Uses the existing worker/queue and a fixed 60-day lookback; no new paid service.
+- Per-repo progress is tenant-readable through RLS. Its manager-facing display
+  remains in PP-050/PP-051/PP-064 alongside the team UI.
+- See `docs/repository-backfill.md` for automatic startup, restart behavior,
+  historical-data limits, and sandbox verification.
+
 ## PP-036 — Add periodic GitHub reconciliation
 
-- Status: `BACKLOG`
+- Status: `DONE` — deployed, daily schedule enabled, and live sandbox reconciliation verified on 2026-09-27
 - Priority: `P1`
 - Dependencies: PP-025, PP-030, PP-031, PP-035
 
@@ -1047,13 +1076,26 @@ Repair missed webhooks and eventual inconsistencies.
 - Rate limits and per-installation failures are handled.
 - Reconciliation activity is observable.
 
+### Implementation notes
+
+- One daily installation check through the existing queue/worker. Complete
+  GitHub snapshots repair known installation state and repository access.
+- Reuses PP-035 cursors for overlapping recent-history repairs; no new service
+  or dashboard. Initial imports remain 60 days; repair uses 7–60 days.
+- Missing-webhook recovery, review correction, idempotency, and scope-race tests
+  pass. Read-only GitHub discovery was verified on the sandbox on 2026-09-27.
+- Live installation refresh and repository repair completed on their first
+  attempts with no duplicate PRs, reviews, or participants.
+- See `docs/github-reconciliation.md` for limits, inspection, replay, and
+  hosted verification results.
+
 ---
 
 # Phase 4 — Scoring, health, and generic season state
 
 ## PP-040 — Implement versioned scoring policy v1
 
-- Status: `BACKLOG`
+- Status: `DONE` — deterministic v1 engine and anti-abuse tests implemented; live ledger integration remains PP-041
 - Priority: `P0`
 - Dependencies: PP-001, PP-002, PP-031, PP-032, PP-033, PP-034
 
@@ -1065,7 +1107,7 @@ Turn canonical facts into deterministic and explainable score transactions.
 
 - Base contribution rules.
 - Per-PR caps.
-- Aging and coverage bonuses approved in PP-001.
+- Aging bonus approved in PP-001; coverage remains badges/statistics, not points.
 - Self-review and bot exclusions.
 - Policy version.
 - Human-readable explanations.
@@ -1077,9 +1119,20 @@ Turn canonical facts into deterministic and explainable score transactions.
 - Repeated low-signal activity cannot grow without limit.
 - At least five gaming scenarios are covered by tests.
 
+### Implementation notes
+
+- `supabase/functions/_shared/scoring/v1.ts` returns stable, explainable desired
+  components and per-review scored/excluded/pending decisions without I/O.
+- Uses the approved 8/10/12 base values, +4 follow-through, +3 first-review
+  rescue, GitHub credit windows, and two-reviewer fallback.
+- Complete PR history enforces lifetime caps before season projection; unknown
+  event-time evidence is pending, not invented or treated as no requirements.
+- See `docs/scoring-engine.md` for deterministic semantics, tests, and the
+  missing event-time inputs PP-041 must collect before enabling live points.
+
 ## PP-041 — Make scoring reversible and recomputable
 
-- Status: `BACKLOG`
+- Status: `DONE` — live award, dismissal retention, and complete recomputation verified
 - Priority: `P0`
 - Dependencies: PP-032, PP-040
 
@@ -1093,17 +1146,57 @@ Correct standings when underlying GitHub facts change.
 - Dismissed and deleted contribution handling.
 - Participant eligibility changes.
 - Full and incremental recomputation.
+- Wire the PP-040 engine to persisted canonical facts and score components.
+- Supply verified event-time readiness, pre-review credit windows, head-change
+  evidence, and historical repository authorization boundaries. Current snapshots
+  alone are insufficient; see `docs/scoring-engine.md`.
 
 ### Acceptance criteria
 
-- Dismissing a previously scored review removes its effect.
+- Dismissing a previously scored approval preserves earned points, whether
+  automatic or manual. Deletion and eligibility corrections still reverse credit.
 - Recomputing twice produces the same result.
 - Historical facts remain intact.
 - Score totals cannot drift from their components.
+- Missing scoring context remains explicitly pending and cannot cause a blind
+  zero-point overwrite of existing valid scores.
+
+### Implementation and verification — 2026-09-27
+
+- Existing worker now recomputes dirty PRs and applies version-checked, reversible
+  score components plus an adjustment history; no independent totals counter.
+- Canonical history enrichment, retained readiness/head/access evidence, and
+  pre-review GitHub gate observations feed the v1 engine. Unknown history is
+  explicitly pending, not guessed from a merged PR or post-approval gate.
+- 213 application tests and 477 database assertions pass. The real local
+  database → engine → ledger test verifies +8, duplicate-safe replay, and -8.
+- Hosted migration `20260927010000_pp041_reversible_scoring.sql` and worker
+  deployed. Contents read-only permission and the corrected token scope were
+  verified against GitHub on 2026-09-28. No frontend changes.
+- Runbook and remaining live test: `docs/reversible-scoring.md`.
+- Hosted cron processed the existing PR and preserved its canonical facts.
+  Its pre-PP-041 review correctly remains `credit_unknown`, with no invented
+  points. The corrected free-plan check now verifies `unconfigured` for the
+  sandbox, enabling first-two-reviewer fallback for new activity.
+- 2026-09-28 clarification: all approval dismissals preserve earned points.
+  Canonical GitHub validity stays false; deletion and independent eligibility
+  corrections still reverse points. No second base or extra fallback slot.
+- Updated verification: 224 application tests, 492 database assertions, and the
+  real scoring bridge pass (+8 approval, dismissal retains 8, deletion reverses 8).
+- Clarified-policy migration `20260928000000_pp041_dismissed_approval_credit.sql`
+  and the updated worker were deployed on 2026-09-28.
+- Final live verification on 2026-09-28: sandbox PR #2 retains its dismissed
+  approval and exactly 8 effective points, one component, one award adjustment,
+  and no reversal. Scoring is `complete`, revision/computed revision 14.
+- `20260928010000_pp041_dismissal_observation_time.sql` and worker deployed:
+  dismissal timestamps use durable receipt evidence rather than unchanged PR
+  `updated_at`; existing evidence repaired without changing original submission.
+  225 application tests, 492 DB assertions, the SQL/engine/ledger regression
+  (including legacy timestamp repair), and focused TypeScript checks pass.
 
 ## PP-042 — Implement standings and streaks
 
-- Status: `BACKLOG`
+- Status: `DONE` — standings/streak calculation and server-only ledger loader verified
 - Priority: `P0`
 - Dependencies: PP-004, PP-040, PP-041
 
@@ -1127,9 +1220,22 @@ Produce season standings and consistent-participation streaks.
 - Tie behavior is tested.
 - Streaks do not reward excluded activity.
 
+### Implementation and verification — 2026-09-28
+
+- Pure standings computation: competition ranks, ties, co-champions after explicit
+  finalization, zero-point not-started entries, component breakdowns, daily UTC
+  current/best streaks, late joins, and shared global season boundaries.
+- Service-role-only organization loader deployed; no cached totals or new jobs.
+  Browser authorization/product endpoints remain PP-060; demo stays unchanged.
+- 240 application tests, 508 DB assertions, focused TypeScript checks, and the
+  SQL/engine/ledger/standings bridge pass. Lint has only existing UI warnings.
+- Live sandbox standings retain exactly 8 points, rank 1, one component, and
+  current/best streak 1. Known older pending history remains explicitly visible.
+- Details and usage: `docs/standings-and-streaks.md`.
+
 ## PP-043 — Implement review-health aggregation
 
-- Status: `BACKLOG`
+- Status: `DONE` — health aggregation and server-only loader verified; unavailable historical comparisons remain explicit
 - Priority: `P0`
 - Dependencies: PP-003, PP-030, PP-034
 
@@ -1153,9 +1259,25 @@ Compute the operational review-health metrics used by Pull Prix.
 - Drafts, bots, self-reviews, and ineligible participants follow policy.
 - Aggregates remain organization-isolated.
 
+### Implementation and verification — 2026-09-28
+
+- Pure review-health aggregation and service-role-only organization loader;
+  useful work comes from effective base reviews, including earned dismissed
+  approvals, without counting comments or follow-through again.
+- UTC baseline/recent windows, normalized weekly rates, participation, shares,
+  small-team load-spread suppression, median first review and strict >24h aging.
+- Missing historical eligibility or daily queue evidence returns unavailable,
+  never an invented zero baseline. The current loader does not produce historical
+  daily queue snapshots; this data-availability limitation is documented.
+- 255 application tests, 525 DB assertions, focused TypeScript checks and the
+  SQL/engine/ledger/standings/health bridge pass. Migration deployed.
+- Live sandbox: 1/3 participation, one useful review, 8m 4s first-review median,
+  zero aging PRs. The known older PR is pending; comparisons remain unavailable.
+- Implementation details: `docs/review-health-metrics.md`.
+
 ## PP-044 — Implement next-review recommendations
 
-- Status: `BACKLOG`
+- Status: `DONE` — safe candidate selection and server-only loader verified
 - Priority: `P0`
 - Dependencies: PP-003, PP-030, PP-034, PP-043
 
@@ -1179,9 +1301,22 @@ Recommend one useful PR a participant can help with next.
 - Every recommendation explains why it was selected.
 - No recommendation is returned when no safe candidate exists.
 
+### Implementation and verification — 2026-09-28
+
+- Conservative base-review recommendations with participant/repository access,
+  author/reviewer conflicts, fresh unchanged gates and lifetime fallback caps.
+- Prioritize aging PRs, recent repository coverage and ready age; machine-readable
+  reasons and GitHub URL, or null when no safe candidate exists.
+- Server-only loader deployed. Live author receives no self-review suggestion.
+  Authorized endpoints and on-demand GitHub refresh remain PP-060/063.
+- Details: `docs/recommendations.md`.
+- Batch validation: 289 application tests, 539 DB assertions, focused TypeScript
+  checks and the extended SQL/engine integration bridge pass. Lint has only
+  existing frontend refresh warnings. No landing/demo changes.
+
 ## PP-045 — Implement generic season snapshots and timeline
 
-- Status: `BACKLOG`
+- Status: `DONE` — generic snapshot and corrected-history timeline calculation verified
 - Priority: `P0`
 - Dependencies: PP-005, PP-042, PP-043
 
@@ -1205,9 +1340,22 @@ Expose theme-independent participant progress over the season.
 - Gardening and construction mappings can be demonstrated in tests or fixtures.
 - Snapshot generation is deterministic.
 
+### Implementation and verification — 2026-09-28
+
+- Generic standings/progress/milestones with explicit season definitions,
+  retained prorated team-entry targets and lifecycle/finalization boundaries.
+- Deterministic UTC timeline samples of the current corrected ledger; historical
+  health is not fabricated. Racing, gardening and construction fixture mappings.
+- Live snapshot retains eight points across 23 timeline samples; production
+  theme definition/persistence and UI remain their respective tickets.
+- Details: `docs/generic-season-snapshots.md`.
+- Batch validation: 289 application tests, 539 DB assertions, focused TypeScript
+  checks and the extended SQL/engine integration bridge pass. Lint has only
+  existing frontend refresh warnings. No landing/demo changes.
+
 ## PP-046 — Define and implement racing theme pack v1
 
-- Status: `BACKLOG`
+- Status: `DONE` — versioned racing theme pack and HUD adapters verified
 - Priority: `P0`
 - Dependencies: PP-005, PP-045
 
@@ -1231,13 +1379,27 @@ Map generic MVP season progress into the existing racing experience.
 - A second example theme can be represented without changing the core contract.
 - Only the racing theme must be production-ready for MVP.
 
+### Implementation and verification — 2026-09-28
+
+- `racing@1.0.0` implements the generic theme interface with racing vocabulary,
+  existing Jacarepaguá geometry/SVG, stable cosmetic identities and earned-work
+  badges. No scoring fields or point changes.
+- Outputs typed track markers, timing rows and profile badges for reusable HUD
+  components. Null ranks render an em dash; numeric demo ranks are unchanged.
+- Finalized champion/co-champion badges, zero-point start-line state, inactive
+  drivers and lifecycle labels are covered. Gardening compatibility fixture.
+- 300 application tests pass, including actual HUD render checks; production
+  TypeScript/Vite build and lint pass with existing warnings only.
+- No database/deployment required. Live provider wiring remains PP-060/061;
+  the public landing/demo remains unchanged. See `docs/racing-theme-pack.md`.
+
 ---
 
 # Phase 5 — Accounts, onboarding, and launch
 
 ## PP-050 — Implement GitHub sign-in for managers and developers
 
-- Status: `BACKLOG`
+- Status: `DONE` — deployed; live GitHub login, session persistence, and logout verified
 - Priority: `P0`
 - Dependencies: PP-006, PP-012, PP-020
 
@@ -1260,9 +1422,24 @@ Let people access Pull Prix using their existing GitHub identity.
 - Revoked or invalid sessions fail safely.
 - Authentication tokens remain server-side where required.
 
+### Implementation and verification — 2026-09-28
+
+- Isolated sign-in/callback routes, PKCE, server-only GitHub token exchange,
+  application session refresh/sign-out, and authorized/no-team/error states.
+- Auth-owned GitHub identity mapping attaches only existing authorized membership;
+  session-aware RLS rejects revoked tokens before expiry. No roster-based grants.
+- Migration and `auth-session` function deployed. Invalid-code hosted check returns
+  a sanitized 401. Provider enabled; navigation reaches GitHub login for Pull Prix Sign-in.
+  Live callback recognized pattyweave with no unauthorized team grants; reload
+  preserved identity, sign-out succeeded, and another reload remained signed out.
+  Token refresh has automated coverage; not forced in the live smoke test.
+- 313 application tests, 551 DB assertions, scoring bridge, production build and
+  lint pass (existing warnings). Browser sign-in layout checked.
+- OAuth configuration and verification details: `docs/github-sign-in.md`.
+
 ## PP-051 — Build the manager installation callback
 
-- Status: `BACKLOG`
+- Status: `DONE` — live owner callback and subsequent access checks passed
 - Priority: `P0`
 - Dependencies: PP-023, PP-024, PP-035, PP-050
 
@@ -1286,9 +1463,21 @@ Return an installer from GitHub to a useful Pull Prix setup state.
 - Refreshing does not restart or duplicate setup.
 - Permission and installation failures provide a recovery path.
 
+### Implementation and verification — 2026-09-28
+
+- Authenticated callback verifies the current GitHub installation and owner/admin
+  identity before granting short-lived access. Callback parameters grant nothing.
+- Safe sign-in return, current-season setup entry, repository progress, explicit
+  retry and permission/waiting/error states implemented. Normal reload never
+  restarts backfill. Full racing/standings screens remain later tickets.
+- Server/API tests and database authorization assertions pass; build/lint pass.
+- User approved Members read-only; the live owner callback reached Pull-Prix
+  with 1 of 1 repositories imported. Subsequent live access checks passed.
+- See `docs/installation-setup.md`. PP-054 remains separate for broader roles.
+
 ## PP-052 — Build automatic roster generation
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-002, PP-034, PP-035, PP-051
 
@@ -1311,9 +1500,19 @@ Show a credible participant roster without manual invitations.
 - Ordinary roster creation requires no manager action.
 - Manual GitHub username entry is not required for normal setup.
 
+### Implementation and verification — 2026-09-28
+
+- Private team page displays the existing 60-day activity-derived roster, with
+  automatic additions, canonical exclusions, avatars/fallbacks and inactive history.
+- No manual roster configuration or new login grants; operator correction remains
+  service-only. Tenant scope is verified before roster data is returned.
+- 346 application tests, 585 DB assertions, build and lint passed (existing warnings).
+- Migration deployed. Live page shows all 3 sandbox contributors with avatars.
+- See `docs/automatic-roster.md`.
+
 ## PP-053 — Build zero-configuration season activation
 
-- Status: `BACKLOG`
+- Status: `DONE` — pilot season entry, theme and scoring guide verified
 - Priority: `P0`
 - Dependencies: PP-004, PP-046, PP-052
 
@@ -1340,9 +1539,21 @@ without a launch or configuration step.
   state is available.
 - Partial backfill does not block developers from seeing the live season.
 
+### Implementation and verification — 2026-09-28
+
+- Global activation metadata binds the calendar to racing@1.0.0/scoring v1;
+  private team entry loads the circuit artwork, countdown and points guide.
+- No launch/configuration controls; unfinished imports do not block season entry.
+- Rollover refreshes automatically at the first Monday noon UTC boundary.
+- 351 application tests, build and lint pass (existing warnings); function deployed
+  and real team page verified. No database/score mutation needed.
+- Circuit artwork is not a driver progress chart. Production target selection and
+  live standings/track integration remain separate; see `docs/season-activation.md`.
+- Developer/spectator authorization follows in PP-054.
+
 ## PP-054 — Implement organization and role authorization
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-002, PP-050, PP-051
 
@@ -1366,9 +1577,21 @@ access.
 - Authorization is enforced in APIs, not only hidden in the UI.
 - Role changes and removed access are tested.
 
+### Implementation and verification — 2026-09-28
+
+- Active organization members and verified collaborators on selected repositories
+  can view the team. Activity determines participant versus spectator status;
+  owner/admin verification is required for installation actions.
+- Server/SQL roles cannot be supplied by the browser. Demotion, lease expiration,
+  local revocation, repository removal and tenant isolation are enforced/tested.
+- 357 application tests, 604 DB assertions, build/lint pass. Database and function
+  deployed. Live GitHub owner/member checks passed; no additional permissions.
+- Removed the dashboard paragraph explaining the shared global season, as requested.
+- See `docs/team-access.md` for the policy and verification limits.
+
 ## PP-055 — Generate a shareable private team entry link
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-050, PP-054
 
@@ -1390,13 +1613,23 @@ Let a manager share one URL with the team instead of sending individual invites.
 - Ineligible users receive a clear next step.
 - No manual invitation is required for eligible participants.
 
+### Implementation and verification — 2026-09-28
+
+- Manager Copy team link action uses the stable current-season team route without
+  credentials. Signed-out visitors return through GitHub login and live access checks.
+- Wrong-account recovery preserves the destination; unauthorized visitors see no
+  team data. Clipboard fallback and local-development notice included.
+- 362 tests, build/lint pass. Live copy and fresh-tab GitHub login return verified.
+- Local preview links are not remotely reachable; deployed-origin sharing still
+  requires hosting the frontend. See `docs/private-team-link.md`.
+
 ---
 
 # Phase 6 — Real product experience
 
 ## PP-060 — Add product-domain API endpoints
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-042, PP-043, PP-045, PP-054
 
@@ -1422,9 +1655,23 @@ that conditional concierge capability is promoted into scope.
 - Pagination or bounded responses exist where required.
 - API contract tests cover success and unauthorized cases.
 
+### Verification — 2026-09-28
+
+- Deployed `product-api` and migration `20260928090000_pp060_product_api.sql`.
+- Six versioned current-season resources: season, standings, snapshots, review
+  health, participant profile, and score history. See `docs/product-api.md`.
+- Caller JWT plus live session/organization/installation/repository-proof checks;
+  response pagination and explicit pilot input bounds; no silently partial totals.
+- 395 application tests and 618 database assertions pass. Build/lint pass with
+  existing warnings; focused API TypeScript check passes.
+- Hosted signed-in browser smoke: three participants, eight points, all six
+  resources succeeded; inaccessible installation denied. Temporary harness removed.
+- Progress remains explicitly unconfigured pending a product target decision.
+  PP-061 will connect these resources to the dashboard; demo remains unchanged.
+
 ## PP-061 — Add a real-data provider while preserving demo mode
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-045, PP-060
 
@@ -1447,11 +1694,32 @@ Let the existing frontend switch between mock demo data and connected team data.
 - Dashboard components do not understand GitHub webhook shapes.
 - New activity appears within the agreed freshness target.
 
+### Verification — 2026-09-28
+
+- Team route now uses the scoped real-data provider, current standings/health and
+  corrected daily replay adapter. Demo/landing mock providers remain independent.
+- Visible-tab polling every 15 seconds, bounded snapshot cache, focus/manual
+  refresh, one access recheck on denial, private-data clearing, and error recovery.
+- 415 application tests, build/lint and diff checks pass. No backend deployment.
+- See `docs/connected-dashboard.md`. Browser visual smoke was blocked by the
+  tool's localhost URL policy; not claimed verified. GitHub-to-screen one-minute
+  latency still needs end-to-end measurement; frontend polling is verified.
+- Progress remains unconfigured; no invented track markers or historical health.
+
 ## PP-062 — Build participant score explanations
 
 - Status: `BACKLOG`
-- Priority: `P0`
+- Priority: `P2`
 - Dependencies: PP-040, PP-041, PP-060
+
+### MVP scope decision
+
+Deferred until after the MVP at the user's request following the UI preview.
+Keep this ticket in the backlog; do not implement the detailed contribution list,
+bonus drill-down, or excluded/reversed-activity UI as a launch prerequisite.
+The preview is a proposal only. Existing point totals, scoring rules summary,
+and score-history API remain available. Revisit when pilot feedback shows people
+need more explanation; founder-assisted answers are sufficient for the MVP.
 
 ### Outcome
 
@@ -1467,7 +1735,8 @@ Make every participant's progress trustworthy and understandable.
 ### Acceptance criteria
 
 - A participant can explain their total from visible score components.
-- Dismissed or corrected contributions no longer appear as effective credit.
+- Dismissed approvals retain earned credit and can show their GitHub dismissal
+  status separately. Deleted or ineligible contributions lose score credit.
 - Private repository information follows organization access rules.
 - The UI avoids presenting opaque quality judgments.
 
@@ -1497,7 +1766,7 @@ Turn the recommendation panel into a real action.
 
 ## PP-064 — Build product loading, empty, and failure states
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-051, PP-061
 
@@ -1522,6 +1791,18 @@ Make the product usable before and during imperfect data conditions.
 - Partial data is not presented as complete data.
 - Failures do not silently fall back to misleading mock data.
 - Recovery paths are tested.
+
+### Verification
+
+- Visible import, missing-repository and incomplete-data notices with role-aware
+  setup/retry actions; clear roster/zero-point and scoped no-season fallback states.
+- Specific permissions, installation, GitHub and backend recovery messages;
+  private data clears on failures and never falls back to mock data.
+- Manual refresh rechecks setup; incomplete imports recheck within a minute;
+  automatic retries pause on access failures and back off on GitHub rate limits.
+- 432 application tests, build/lint and diff checks pass (existing warnings).
+  No backend changes. Browser visual QA remains blocked by localhost URL policy.
+- See `docs/product-states.md` for behavior and no-season/removal limitations.
 
 ## PP-065 — Build manager review-health view
 
@@ -1556,7 +1837,7 @@ surveillance dashboard.
 
 ## PP-070 — Implement season state transitions
 
-- Status: `BACKLOG`
+- Status: `DONE`
 - Priority: `P0`
 - Dependencies: PP-004, PP-042, PP-045
 
@@ -1582,6 +1863,11 @@ boundaries.
 - All organizations observe the same active season.
 - The next season starts even while the prior season is finalizing.
 - Completed results remain viewable.
+
+Implementation: `docs/season-transitions.md`. Independent calendar activation,
+retryable archival worker, immutable scoped results and private season history.
+Validation: 442 application tests, 638 database assertions, build/typecheck/lint.
+Visual browser QA remains unverified due to the localhost tool-policy block.
 
 ## PP-071 — Build global racing season reveal
 
@@ -1696,7 +1982,7 @@ released without changing the contribution engine.
 
 ## PP-080 — Publish privacy policy and terms
 
-- Status: `BACKLOG`
+- Status: `DONE` — pilot policies linked; approved Pull Prix operator name and named founder contact path
 - Priority: `P0`
 - Dependencies: PP-002, PP-006
 
@@ -1722,9 +2008,12 @@ control it.
 - Repository and review data are described accurately.
 - No compliance certification is claimed without evidence.
 
+Pilot implementation is complete. Pre-invitation hosting disclosures and verified
+domain contact aliases are tracked in `docs/pilot-onboarding.md`.
+
 ## PP-081 — Implement installation and organization data deletion
 
-- Status: `BACKLOG`
+- Status: `DONE` — deletion migration and worker deployed; tenant isolation, full data cascade and delayed-event suppression verified
 - Priority: `P0`
 - Dependencies: PP-002, PP-023, PP-080
 
@@ -1746,6 +2035,10 @@ Stop processing and delete customer data according to policy.
 - Deletion removes data within the documented period.
 - Jobs cannot recreate deleted organization data.
 - The deletion process is tested end to end.
+
+Implementation and support procedure: `docs/privacy-and-deletion.md`.
+Verified locally with 444 application tests and 664 database assertions; no real
+organization was deleted as a test.
 
 ## PP-082 — Add webhook and backfill operations console
 
@@ -1830,9 +2123,9 @@ Measure whether teams install, participate, improve, and return.
 
 ## PP-085 — Prepare private-pilot onboarding and support
 
-- Status: `BACKLOG`
+- Status: `DONE` — customer guide and founder onboarding/support playbook implemented
 - Priority: `P1`
-- Dependencies: PP-020, PP-053, PP-064, PP-080, PP-082
+- Dependencies: PP-020, PP-053, PP-064, PP-080 (existing runbooks replace PP-082 for concierge MVP)
 
 ### Outcome
 
@@ -1856,11 +2149,15 @@ Onboard the first teams consistently and recover quickly when something fails.
 - Support ownership and response expectations are clear.
 - Pilot feedback is collected at launch, midpoint, and finale.
 
+Implementation: `/pilot` and `docs/pilot-onboarding.md`. Hosting/app installation
+preflight remains required before outside invitations; this status does not imply
+a public deployment or completed PP-086 rehearsal.
+
 ## PP-086 — Run an internal end-to-end season
 
-- Status: `BACKLOG`
+- Status: `IN PROGRESS` — independent rehearsal and hosted audit passed; timed live journey pending
 - Priority: `P0`
-- Dependencies: PP-053, PP-061, PP-063, PP-064, PP-070, PP-081
+- Dependencies: PP-053, PP-061, PP-064, PP-070, PP-081 (PP-063 deferred for lean pilot)
 
 ### Outcome
 
@@ -1874,7 +2171,7 @@ Prove that the system works on real GitHub activity before involving a customer.
 - Launch.
 - Live ingestion.
 - Score correction.
-- Recommendations.
+- Recommendations deferred for the lean pilot.
 - Season completion.
 - Uninstall and deletion.
 
@@ -1883,9 +2180,16 @@ Prove that the system works on real GitHub activity before involving a customer.
 - The full manager path completes in under five minutes excluding GitHub's own
   approval time and asynchronous backfill.
 - New review activity appears within one minute.
-- Duplicate and dismissed activity is corrected.
+- Duplicate activity cannot add points; dismissed approvals keep earned credit.
 - The season can complete and remain viewable.
 - Uninstall stops processing and triggers the documented deletion behavior.
+
+Evidence and exact remaining user steps: `docs/internal-season-rehearsal.md`.
+Includes rollback-only scoring-to-archive-to-deletion bridge. Hosted latency
+target and fresh browser/install/uninstall acceptance are not yet signed off.
+September 30: fixed the new-PR fast-review gap with an explicit first-check
+no-requirements fallback; deployed worker/migration and verified the rehearsal
+PR now earns 10 points. Enforced/unreadable historical gates remain conservative.
 
 ## PP-087 — Run the first design-partner pilot
 
@@ -2048,7 +2352,7 @@ PP-040..046
     ↓
 PP-050..055
     ↓
-PP-060..064
+PP-060..061 + PP-064
     ↓
 PP-070
     ↓

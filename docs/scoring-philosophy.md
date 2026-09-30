@@ -44,8 +44,9 @@ the necessary review work is already complete.
    review requirements inside Pull Prix.
 
 8. **Scoring must be explainable and reversible.**
-   Every point has a human-readable reason. Dismissed or deleted reviews remove
-   their scoring effect.
+   Every point has a human-readable reason. Deleted or ineligible reviews remove
+   their scoring effect. Every dismissal of an approval preserves earned review
+   points: GitHub approval validity is separate from credit for work performed.
 
 9. **Themes may reinterpret progress, but not rewrite facts.**
    Racing, gardening, construction, and future worlds consume the same
@@ -67,7 +68,8 @@ A review may score when all of the following are true:
 - The review is a formal GitHub review with an outcome of approved, commented,
   or changes requested.
 - Review work is still necessary under the review-credit window.
-- The review has not been deleted or dismissed.
+- The review has not been deleted. A later dismissal of an approval, automatic
+  or manual, does not erase earned points or reset reviewer/PR scoring caps.
 
 A reviewer does not need to have been formally requested. Pull Prix should
 recognize eligible developers who proactively help.
@@ -99,6 +101,14 @@ Pull Prix uses this automatic fallback:
 
 - The first two unique eligible reviewers may earn a base review score.
 - Later reviewers earn no championship points for that PR.
+
+For a newly opened, unchanged PR, the first successful check may arrive after a
+fast review. If that **first check** explicitly confirms no enforced requirements
+within five minutes of PR creation, apply the same fallback to those initial
+reviews. This is an initial-observation policy, not proof of historical rules.
+Keep the real observation time with the award. Earlier unknown/enforced checks,
+intervening PR changes, missing opening evidence, and older imports do not qualify.
+Repositories with enforced or unreadable requirements still require prior evidence.
 
 ### Per-reviewer cap
 
@@ -256,7 +266,9 @@ replace the PR.
 
 Exceptions:
 
-- A dismissed review loses its scoring effect.
+- Dismissed approvals retain earned credit, including manual dismissals. This
+  does not excuse an independently discovered eligibility violation. A dismissed
+  snapshot with no known original outcome is not assumed to have been approved.
 - A deleted review loses its scoring effect.
 - A review later determined to be ineligible is removed through deterministic
   recomputation.
@@ -301,7 +313,7 @@ The following activity awards zero championship points:
 - Repeated submissions without new commits.
 - A second follow-through review.
 - Deleted reviews.
-- Dismissed reviews.
+- Dismissal events themselves (no additional points; earned approval points stay).
 - Activity outside the active season.
 - Activity in repositories excluded from the season.
 - Daily streaks.
@@ -382,9 +394,13 @@ Mateo earns 8 points for an approval. A maintainer later dismisses the review.
 
 ```text
 Original approval: 8
-Dismissal adjustment: -8
-Final total from review: 0
+Dismissal adjustment: 0
+Final total from review: 8
 ```
+
+This applies to both automatic stale-approval dismissals and manual maintainer
+dismissals, as clarified on 2026-09-28. Another approval on the same PR cannot
+earn another base; a genuinely qualifying follow-through can still earn +4.
 
 ### Example 8 — Repository without enforced approvals
 

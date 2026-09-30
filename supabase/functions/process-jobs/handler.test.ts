@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { handleProcessJobsRequest } from "./handler.ts"
+import { GitHubRateLimitError, readGitHubRateLimit } from "../_shared/github/rate-limit.ts"
 import type {
   BackgroundJob,
   BackgroundJobRepository,
@@ -23,7 +24,7 @@ function createRepository(
   fail: ReturnType<typeof vi.fn>
 } {
   return {
-    claim: vi.fn().mockResolvedValue(jobs),
+    claim: vi.fn().mockResolvedValueOnce(jobs).mockResolvedValue([]),
     complete: vi.fn().mockResolvedValue(true),
     fail: vi.fn().mockResolvedValue("retrying"),
   }
@@ -39,6 +40,49 @@ function request(apiKey = "server-secret") {
 const processGitHubDelivery = vi.fn().mockResolvedValue({ disposition: "applied" })
 
 describe("process-jobs Edge Function", () => {
+  it("schedules dirty scores and routes scoring through the existing worker", async () => {
+    const scoring = { ...job, job_type: "scoring.pull-request", payload: { pull_request_id: "pr" } }
+    const repository = createRepository([scoring])
+    const enqueueScoring = vi.fn().mockResolvedValue(1), processScoring = vi.fn().mockResolvedValue({ disposition: "pending" })
+    const response = await handleProcessJobsRequest(request(), { repository, processGitHubDelivery, enqueueScoring, processScoring, secretKey: "server-secret" })
+    expect(processScoring).toHaveBeenCalledWith(scoring.payload)
+    expect(enqueueScoring).toHaveBeenCalledTimes(2)
+    expect(repository.complete).toHaveBeenCalledWith(scoring, { disposition: "pending" })
+    await expect(response.json()).resolves.toMatchObject({ claimed: 1, succeeded: 1, failed: 0 })
+  })
+  it("routes reconciliation through the same isolated job failure handling", async () => {
+    const reconcile = { ...job, job_type: "github.reconcile-installation", payload: { github_installation_id: 123 } }
+    const repository = createRepository([reconcile])
+    repository.claim.mockResolvedValueOnce([job])
+    const processReconciliation = vi.fn().mockRejectedValue(new Error("GitHub installation snapshot failed with status 503"))
+    const response = await handleProcessJobsRequest(request(), { repository, processGitHubDelivery,
+      processReconciliation, secretKey: "server-secret" })
+    expect(processReconciliation).toHaveBeenCalledWith(reconcile.payload)
+    await expect(response.json()).resolves.toEqual({ claimed: 2, failed: 1, succeeded: 1 })
+  })
+  it("drains follow-up pages while isolating rate-limited repositories", async () => {
+    const backfillJob = { ...job, job_type: "backfill.repository-page", payload: { repository_id: "repo" } }
+    const repository = createRepository([backfillJob])
+    repository.claim.mockResolvedValueOnce([job])
+    const processBackfill = vi.fn().mockRejectedValue(new GitHubRateLimitError(
+      readGitHubRateLimit(new Headers({ "retry-after": "120" })),
+    ))
+    const response = await handleProcessJobsRequest(request(), {
+      processGitHubDelivery, processBackfill, repository, secretKey: "server-secret",
+    })
+    expect(processBackfill).toHaveBeenCalledWith(backfillJob.payload)
+    expect(repository.fail).toHaveBeenCalledWith(backfillJob, "GitHub API rate limit exceeded", 120)
+    expect(repository.complete).toHaveBeenCalledWith(job, { processed: true })
+    await expect(response.json()).resolves.toEqual({ claimed: 2, failed: 1, succeeded: 1 })
+  })
+
+  it("stops draining after ten jobs", async () => {
+    const repository = createRepository([job])
+    repository.claim.mockResolvedValue([job])
+    const response = await handleProcessJobsRequest(request(), { processGitHubDelivery, repository, secretKey: "server-secret" })
+    await expect(response.json()).resolves.toMatchObject({ claimed: 10 })
+    expect(repository.claim).toHaveBeenCalledTimes(10)
+  })
   it("rejects requests without the server secret", async () => {
     const repository = createRepository([])
     const response = await handleProcessJobsRequest(request("wrong-key"), {
@@ -60,7 +104,7 @@ describe("process-jobs Edge Function", () => {
       secretKey: "server-secret",
     })
 
-    expect(repository.claim).toHaveBeenCalledWith(5, 60)
+    expect(repository.claim).toHaveBeenCalledWith(1, 120)
     expect(repository.complete).toHaveBeenCalledWith(job, { processed: true })
     expect(repository.fail).not.toHaveBeenCalled()
     await expect(response.json()).resolves.toEqual({
@@ -114,7 +158,7 @@ describe("process-jobs Edge Function", () => {
   it("logs a safe batch failure without the exception or secret", async () => {
     const errorLog = vi.spyOn(console, "error").mockImplementation(() => undefined)
     const repository = createRepository([])
-    repository.claim.mockRejectedValue(
+    repository.claim.mockReset().mockRejectedValue(
       new Error("database rejected server-secret and private payload"),
     )
 
@@ -159,4 +203,23 @@ describe("process-jobs Edge Function", () => {
     await expect(response.json()).resolves.toMatchObject({ succeeded: 1 })
     infoLog.mockRestore()
   })
+})
+
+it('runs finalization on idle ticks, isolates failure, and requires worker authorization', async () => {
+  const finalizeSeasons=vi.fn().mockRejectedValue(new Error('retry later'))
+  const dependencies={repository:createRepository([]),processGitHubDelivery,finalizeSeasons,secretKey:'server-secret',log:vi.fn()}
+  expect((await handleProcessJobsRequest(request('wrong'),dependencies)).status).toBe(401)
+  expect(finalizeSeasons).not.toHaveBeenCalled()
+  expect((await handleProcessJobsRequest(request(),dependencies)).status).toBe(200)
+  expect(finalizeSeasons).toHaveBeenCalledTimes(1)
+})
+
+it('runs deletion maintenance after authorized work and isolates purge failures', async () => {
+  const deleteUninstalledData=vi.fn().mockRejectedValue(new Error('retry later'))
+  const deps={repository:createRepository([job]),processGitHubDelivery,deleteUninstalledData,secretKey:'server-secret'}
+  expect((await handleProcessJobsRequest(request('wrong'),deps)).status).toBe(401)
+  expect(deleteUninstalledData).not.toHaveBeenCalled()
+  const response=await handleProcessJobsRequest(request(),deps)
+  expect(await response.json()).toMatchObject({succeeded:1})
+  expect(deleteUninstalledData).toHaveBeenCalledTimes(1)
 })

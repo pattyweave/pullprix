@@ -60,7 +60,7 @@ export function createGitHubInstallationTokenProvider(
 
       const jwt = await createGitHubAppJwt(appId, await importedKey, now)
       const body: Record<string, unknown> = {
-        permissions: { pull_requests: "read" },
+        permissions: { pull_requests: "read", contents: "read" },
       }
       if (scope.repository_selection === "selected") {
         body.repository_ids = [...scope.repository_ids].sort((a, b) => a - b)
