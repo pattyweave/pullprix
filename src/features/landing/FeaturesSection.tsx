@@ -11,17 +11,17 @@ const FEATURES = [
   {
     icon: '📈',
     title: 'Live Team Standings',
-    desc: 'A real-time timing tower for who’s carrying review load.',
+    desc: 'Follow qualifying review contributions as your team moves around the circuit.',
   },
   {
     icon: '🎯',
-    title: 'Smart Review Suggestions',
-    desc: 'Nudges the right reviewer toward the right PR before it ages out.',
+    title: 'Review Health',
+    desc: 'See participation, waiting PRs, and time to first review in one place.',
   },
   {
     icon: '🏆',
-    title: 'Achievements',
-    desc: 'Collectible badges for the reviews that actually move the needle.',
+    title: 'Season Replay',
+    desc: 'Look back through daily standings and see how the season unfolded.',
   },
   {
     icon: '⚡',
@@ -30,8 +30,8 @@ const FEATURES = [
   },
   {
     icon: '🎮',
-    title: 'Team Themes',
-    desc: 'Constructors, colors, and identities your team makes their own.',
+    title: 'Private Team Access',
+    desc: 'GitHub sign-in and verified team access keep your dashboard private.',
   },
 ]
 

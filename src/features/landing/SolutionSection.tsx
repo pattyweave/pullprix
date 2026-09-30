@@ -1,7 +1,7 @@
 import { Fragment } from 'react'
 import { ArrowRight } from 'lucide-react'
 import {
-  Award,
+  History,
   Flag,
   GitPullRequest,
   MapPin,
@@ -15,7 +15,7 @@ const LOOP: { icon: LucideIcon; label: string }[] = [
   { icon: GitPullRequest, label: 'Review PRs' },
   { icon: Flag, label: 'Earn points' },
   { icon: MapPin, label: 'Move around the circuit' },
-  { icon: Award, label: 'Unlock badges' },
+  { icon: History, label: 'Replay your progress' },
   { icon: Trophy, label: 'Win the season' },
 ]
 

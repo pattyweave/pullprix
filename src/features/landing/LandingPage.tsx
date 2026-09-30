@@ -3,7 +3,7 @@ import { HeroSection } from './HeroSection'
 import { HowItWorksSection } from './HowItWorksSection'
 import { ProblemSection } from './ProblemSection'
 import { SolutionSection } from './SolutionSection'
-import { WaitlistSection } from './WaitlistSection'
+import { PilotAccessSection } from './PilotAccessSection'
 
 /**
  * The marketing landing page. Composed entirely from reusable sections that
@@ -18,7 +18,7 @@ export function LandingPage() {
       <SolutionSection />
       <FeaturesSection />
       <HowItWorksSection />
-      <WaitlistSection />
+      <PilotAccessSection />
     </div>
   )
 }

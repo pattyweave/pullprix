@@ -9,7 +9,7 @@ const STEPS = [
   {
     n: '02',
     title: 'Pull Prix tracks review activity',
-    desc: 'Every review, comment, and approval becomes a scored event.',
+    desc: 'Eligible formal reviews earn points. Thoughtful feedback adds value without rewarding comment volume.',
   },
   {
     n: '03',
@@ -18,8 +18,8 @@ const STEPS = [
   },
   {
     n: '04',
-    title: 'Managers see healthier review participation',
-    desc: 'Load spreads out. Queues shrink. The whole team shows up.',
+    title: 'See how your team reviews',
+    desc: 'Follow participation and waiting PRs, then talk about what is helping your team.',
   },
 ]
 
@@ -30,7 +30,7 @@ export function HowItWorksSection() {
       <div className="flex flex-col gap-3">
         <Eyebrow>How It Works</Eyebrow>
         <SectionTitle className="max-w-2xl">
-          Live in minutes. Healthier in a season.
+          Connect your team. Follow the season.
         </SectionTitle>
       </div>
 

@@ -42,12 +42,12 @@ export function HeroSection() {
         </p>
 
         <div className="mt-2 flex flex-wrap items-center gap-3">
-          <a
-            href="#waitlist"
+          <Link
+            to="/sign-in"
             className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:shadow-[0_0_28px_-4px_var(--pp-accent)]"
           >
-            Join the Waitlist
-          </a>
+            Sign in with GitHub
+          </Link>
           <Link
             to="/demo"
             className="flex items-center gap-2 rounded-full border border-line-strong px-5 py-3 text-sm font-medium text-text transition-colors hover:border-accent hover:text-accent"
@@ -56,6 +56,7 @@ export function HeroSection() {
             Watch Demo
           </Link>
         </div>
+        <p className="text-sm text-text-dim">New to Pull Prix? <Link to="/pilot" className="underline underline-offset-4 hover:text-accent">Learn about the private pilot</Link>.</p>
       </motion.div>
 
       {/* Live dashboard preview */}

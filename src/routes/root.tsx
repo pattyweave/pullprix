@@ -13,7 +13,7 @@ export const rootRoute = createRootRoute({
 function RootLayout() {
   return (
     <div className="min-h-svh bg-background text-foreground">
-      <nav className="flex h-13 items-center gap-3 border-b border-line px-(--pp-gutter)">
+      <nav aria-label="Main navigation" className="flex min-h-16 items-center gap-3 border-b border-line px-(--pp-gutter)">
         <Link
           to="/"
           className="transition-opacity hover:opacity-80"
@@ -21,15 +21,18 @@ function RootLayout() {
         >
           <img src={logoMark} alt="Pull Prix" className="h-6 w-auto" />
         </Link>
-        <span className="ml-auto">
+        <div className="ml-auto flex items-center gap-2 sm:gap-4">
           <Link
             to="/demo"
-            className="hud-label text-text-faint transition-colors hover:text-text"
+            className="hud-label inline-flex min-h-11 items-center px-3 text-text-dim transition-colors hover:text-text"
             activeProps={{ className: 'hud-label text-accent' }}
           >
             Demo
           </Link>
-        </span>
+          <Link to="/sign-in" className="inline-flex min-h-11 items-center rounded-full border border-line-strong px-5 text-sm font-semibold transition-colors hover:border-accent hover:text-accent">
+            Sign in
+          </Link>
+        </div>
       </nav>
       <Outlet />
     </div>
