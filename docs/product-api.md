@@ -85,3 +85,27 @@ remain service-only. No GitHub requests occur on product reads.
   denied. Temporary smoke page removed and team dashboard restored.
 - Migration `20260928090000` is deployed and recorded; Edge Function `product-api`
   is deployed. No frontend data-provider wiring or progress policy was added.
+
+## Live review queue (PP-091)
+
+`resource=review-queue` is a separate, current-only workflow response, not part of
+historical replay or scoring. The caller JWT authorizes the installation via
+`get_review_queue_context`; the server independently verifies each repository's
+GitHub permission and matching numeric user identity before fetching PR metadata.
+No new GitHub permissions are required. Responses use `no-store` and no browser
+storage. A failed refresh clears displayed queue data.
+
+The queue includes non-draft open human-authored PRs with `REVIEW_REQUIRED`, or
+no decision and no formal human reviews (labelled “Awaiting first review”). It
+excludes satisfied decisions and outstanding changes requested. This is not a
+claim that an extra review earns points. Own/already-reviewed PRs are labelled in
+the list and excluded from the personal suggestion. Ordering is oldest opened
+first, with stable IDs as a tie breaker; no inferred readiness timestamps.
+
+The visible dashboard requests this resource once a minute, independently of the
+15-second standings poll. Work is bounded to 10 selected repositories, 100 oldest
+open PRs per repository, and 100 formal reviews per PR. Truncation, unknown review
+history, or provider failures produce an explicit partial result, never a false
+complete zero. The queue count covers only verified accessible repositories.
+The pilot implementation performs live permission and metadata reads per request;
+shared provider caching/push invalidation is a future scaling optimization.

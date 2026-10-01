@@ -2411,3 +2411,13 @@ Validation: connected dashboard and track adapter tests; production build and li
 - Correct singular day labels; preserve the demo and existing scoring/access policies.
 
 Validation: 51 connected frontend tests, production build, lint (existing warnings only), and live five-driver desktop/mobile review. Verified playback advances actual samples, pause and Back to live, grouped labels, and no horizontal overflow at 320px.
+
+## PP-091 — Live review queue and Up next
+
+**Status:** IN PROGRESS
+
+- Add a linked personal Up next suggestion and an expandable queue in the pit wall.
+- Verify repository access before exposing PR metadata; retain team/session authorization.
+- Exclude drafts, closed PRs and work awaiting author changes; distinguish required review from initial review.
+- Keep personal conflicts visible in the queue, but exclude them from Up next.
+- Refresh the queue once per minute while visible; preserve demo and replay animation.

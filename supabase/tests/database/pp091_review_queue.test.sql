@@ -1,0 +1,38 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+select no_plan();
+insert into auth.users(id) values('10000000-0000-0000-0000-000000000001');
+insert into auth.identities(id,user_id,provider,provider_id,identity_data) values(gen_random_uuid(),'10000000-0000-0000-0000-000000000001','github','7001','{"sub":"7001","user_name":"owner"}');
+insert into auth.sessions(id,user_id) values('50000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000001');
+insert into public.github_users(github_user_id,login,account_type) values(7001,'owner','User');
+insert into public.organizations(github_account_id,slug,name) values(9001,'allowed','Allowed'),(9002,'other','Other');
+insert into public.github_installations(organization_id,github_installation_id,account_id,account_login,account_type,installed_at)
+ select id,case when slug='allowed' then 8001 else 8002 end,github_account_id,slug,'Organization',now() from public.organizations;
+insert into public.repositories(organization_id,installation_id,github_repository_id,owner,name,full_name)
+ select organization_id,id,6001,'allowed','repo','allowed/repo' from public.github_installations where github_installation_id=8001;
+select public.complete_team_access('10000000-0000-0000-0000-000000000001','50000000-0000-0000-0000-000000000001',8001,9001,false,false,6001);
+select set_config('request.jwt.claims','{"sub":"10000000-0000-0000-0000-000000000001","role":"authenticated","session_id":"50000000-0000-0000-0000-000000000001"}',true);
+set local role authenticated;
+select is(public.get_review_queue_context(8001)->>'organizationId',(select id::text from public.organizations where slug='allowed'),'queue context scoped to member team');
+select is(public.get_review_queue_context(8001)->'subject'->>'githubUserId','7001','identity comes from authenticated account');
+select is(public.get_review_queue_context(8001)->'repositories'->0->>'name','allowed/repo','selected repository returned');
+select throws_ok($$select public.get_review_queue_context(8002)$$,'PT403','access_denied','other team denied');
+select throws_ok($$select public.get_review_queue_context(9999)$$,'PT403','access_denied','unknown installation denied');
+reset role;
+update public.repositories set active=false;
+set local role authenticated;
+select throws_ok($$select public.get_review_queue_context(8001)$$,'PT403','access_denied','removed collaborator proof denied');
+reset role;
+update public.repositories set active=true;
+update public.organization_memberships set installation_verified_until=now()-interval '1 second';
+set local role authenticated;
+select throws_ok($$select public.get_review_queue_context(8001)$$,'PT403','access_denied','expired membership lease denied');
+reset role;
+delete from auth.sessions;
+set local role authenticated;
+select throws_ok($$select public.get_review_queue_context(8001)$$,'PT401','sign_in_again','revoked session denied');
+reset role;
+select ok(not has_function_privilege('anon','public.get_review_queue_context(bigint)','EXECUTE'),'anonymous RPC denied');
+select ok(not has_function_privilege('service_role','public.get_review_queue_context(bigint)','EXECUTE'),'service cannot replace caller');
+select * from finish();
+rollback;

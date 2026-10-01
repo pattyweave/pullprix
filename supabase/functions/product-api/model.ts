@@ -4,7 +4,7 @@ import { activeSeason } from '../_shared/season/activation.ts'
 
 export type ProductInput = { standings: StandingsInput; health: HealthInput | null }
 export type ProductQuery = {
-  resource: 'season' | 'standings' | 'snapshots' | 'review-health' | 'participant' | 'score-history' | 'seasons' | 'archive'
+  resource: 'review-queue' | 'season' | 'standings' | 'snapshots' | 'review-health' | 'participant' | 'score-history' | 'seasons' | 'archive'
   installationId: number
   seasonId?: string
   participantId?: string

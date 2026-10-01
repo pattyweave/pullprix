@@ -125,3 +125,17 @@
 .race-timeline-labels { display:flex; justify-content:space-between; gap:12px; font:11px/1.4 monospace; color:var(--pp-text-faint); }
 .race-transport { gap:10px; }.race-live-state { min-width:70px; max-width:120px; }.race-scrubber { min-width:90px; }
 @media(max-width:1099px) { .race-scrubber { flex-basis:100%; order:3; }.race-transport>button:last-child { margin-left:auto; }.race-live-state { max-width:145px; } }
+
+/* The live work queue stays compact until someone chooses to browse it. */
+.race-queue-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.race-next-pr { display: grid; gap: 8px; margin-top: 14px; padding-left: 12px; border-left: 2px solid var(--pp-accent); }
+.race-next-pr strong { font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; }
+.race-pr-reference { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--pp-text-faint); overflow-wrap: anywhere; }
+.race-pr-reference svg { flex-shrink: 0; }
+.race-next-pr:hover strong, .race-queue-list a:hover { color: var(--pp-accent); }
+.race-review-queue a:focus-visible, .race-review-queue summary:focus-visible { outline: 2px solid var(--pp-accent); outline-offset: 4px; }
+.race-queue-list { margin-top: 16px; border-top: 1px solid var(--pp-line); padding-top: 4px; }
+.race-queue-list summary { cursor: pointer; padding: 12px 0; font-size: 13px; font-weight: 600; }
+.race-queue-list ol { max-height: 320px; overflow-y: auto; overscroll-behavior: contain; }
+.race-queue-list li + li { border-top: 1px solid var(--pp-line); }
+.race-queue-list li a { display: grid; gap: 6px; padding: 12px 0; font-size: 13px; overflow-wrap: anywhere; }

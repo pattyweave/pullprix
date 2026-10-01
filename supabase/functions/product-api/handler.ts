@@ -2,10 +2,11 @@ import { activeSeason } from '../_shared/season/activation.ts'
 import { ProductError, productResponse, type ProductInput, type ProductQuery } from './model.ts'
 export type ProductDependencies = {
   load(token: string, installationId: number, seasonId: string, health: boolean): Promise<ProductInput>
+  queue?: (token: string, installationId: number) => Promise<unknown>
   history?: (token: string, installationId: number, seasonId: string | undefined, offset: number, limit: number) => Promise<unknown>
   now?: () => string
 }
-const resources = new Set(['season', 'standings', 'snapshots', 'review-health', 'participant', 'score-history', 'seasons', 'archive'])
+const resources = new Set(['season', 'standings', 'snapshots', 'review-health', 'participant', 'score-history', 'seasons', 'archive', 'review-queue'])
 export function createProductHandler(origin: string, deps: ProductDependencies) {
   return async (request: Request) => {
     const headers = { 'access-control-allow-origin': origin, 'access-control-allow-headers': 'authorization,apikey,content-type',
@@ -38,6 +39,10 @@ export function createProductHandler(origin: string, deps: ProductDependencies) 
       return reply(400, { error: 'invalid_request' })
     }
     try {
+      if (resource === 'review-queue') {
+        if (!deps.queue) throw new Error('Queue unavailable')
+        return reply(200, await deps.queue(authorization.slice(7), installationId))
+      }
       if (resource === 'seasons' || resource === 'archive') {
         if (!deps.history) throw new Error('History unavailable')
         return reply(200, await deps.history(authorization.slice(7), installationId, seasonId, offset, limit))

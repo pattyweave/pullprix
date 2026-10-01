@@ -12,6 +12,7 @@ import { ShareTeamLink } from '../setup/ShareTeamLink'
 import { RACING_MANIFEST } from '../themes'
 import { useTeamData } from './useTeamData'
 import { adaptFrame } from './adapter'
+import { ReviewQueue } from './ReviewQueue'
 import { TeamNotice } from './TeamNotice'
 import { recoveryMessages } from './recovery-messages'
 import type { TeamData } from './types'
@@ -125,6 +126,7 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
         </details>
       </>}
     </section>
+    <ReviewQueue key={installationId} installationId={installationId} organizationId={data.setup.organization.id} />
     <TeamNotice data={data} />
     <details className="race-panel race-operations"><summary className="race-menu-heading"><Settings2 size={16} aria-hidden="true" />Team menu</summary>
     <div className="mt-3 flex flex-wrap gap-3"><button className={button} disabled={refreshing} onClick={() => void refresh()}>{refreshing ? 'Refreshing…' : 'Refresh'}</button><a className="race-action" href="/sign-in?account=1">Switch team</a><a className="race-action" href={`/teams/${installationId}/history`}>Season history</a></div>
