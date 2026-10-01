@@ -49,3 +49,53 @@
 .race-track-map svg { transform:scale(1.28); }
 .race-standing { gap:8px; padding-inline:8px; }
 @media(max-width:1099px) { .race-track-map svg { transform:scale(1.1); } }
+
+/* Version two: the circuit is the canvas; rails and transport float above it. */
+.team-race { position:relative; }
+.race-header { padding:7px 24px; gap:18px; background:transparent; border-bottom:0; }
+.race-header-eyebrow { display:none; }
+.race-team-name { font-size:16px; }
+.race-season { display:flex; align-items:center; gap:16px; }
+.race-season>.hud-label { font-size:11px; }
+.race-season [aria-label='Season countdown'] { font-size:12px; }
+.race-track { inset:0; padding:0; }
+.race-track-map { position:absolute; inset:0; padding:24px 0 90px; }
+.race-track-map svg { transform:scale(1.35); }
+.race-circuit-label { position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:1; }
+.race-circuit-label>p { font-size:14px; }
+.race-track-caption { position:absolute; bottom:108px; left:50%; transform:translateX(-50%); white-space:nowrap; }
+.race-left,.race-right { top:12px; bottom:20px; gap:12px; }
+.race-panel { background:color-mix(in oklch,var(--pp-void) 78%,transparent); padding:16px; border-color:color-mix(in oklch,var(--pp-line) 70%,transparent); }
+.race-standing { min-height:48px; padding-block:8px; }
+.race-standings { margin-top:12px; gap:2px; }
+.race-driver { margin-top:auto; }
+.race-health-metrics { gap:22px 14px; margin-top:24px; }
+.race-health-metrics dd { font-size:26px; }
+.race-data-notes { margin-top:18px; border-top:1px solid var(--pp-line); }
+.race-data-notes summary { min-height:44px; padding-top:14px; font-size:11px; color:var(--pp-text-faint); cursor:pointer; }
+.race-menu-heading { display:flex; align-items:center; gap:10px; font-size:12px; color:var(--pp-text-dim); }
+.race-menu-heading::after { content:'+'; margin-left:auto; font-family:monospace; }
+.race-operations[open]>.race-menu-heading::after { content:'−'; }
+.race-operations { padding-block:4px; }
+.race-operations[open] { padding-bottom:16px; }
+.race-updated { text-align:left; padding:0 12px; font-size:11px; }
+.race-transport { position:absolute; z-index:2; bottom:20px; left:50%; transform:translateX(-50%); width:calc(100% - 620px); max-width:760px; gap:14px; padding:12px 16px; border:1px solid var(--pp-line); border-radius:12px; background:color-mix(in oklch,var(--pp-surface) 80%,transparent); backdrop-filter:blur(20px); box-shadow:0 12px 40px #0003; }
+.race-live-state { min-width:100px; gap:8px; }
+.race-scrubber p { font-size:11px; }
+@media(min-width:1500px) { .race-track { inset:0; }.race-transport { width:calc(100% - 690px); } }
+@media(max-width:1099px) {
+ .race-header { padding:10px 16px; flex-wrap:wrap; gap:4px 12px; }
+ .race-header>div:first-child { flex-basis:100%; }
+ .race-team-name { font-size:16px; }
+ .race-season { margin-left:0; max-width:none; width:100%; justify-content:space-between; gap:8px; }
+ .race-season>.hud-label,.race-season [aria-label='Season countdown'] { font-size:11px; }
+ .race-track { inset:0; padding:8px 0 0; }
+ .race-track-map { position:static; padding:0; }
+ .race-track-map svg { transform:scale(1.12); }
+ .race-circuit-label { position:static; transform:none; }
+ .race-track-caption { position:static; transform:none; white-space:normal; }
+ .race-left,.race-right { inset:0; }
+ .race-transport { position:static; transform:none; width:auto; max-width:none; margin:8px 12px 12px; padding:10px 12px; gap:8px 12px; }
+ .race-live-state { min-width:0; }.race-updated { margin:0; }
+ .race-transport>button { margin-left:auto; }.race-driver { margin-top:0; }
+}

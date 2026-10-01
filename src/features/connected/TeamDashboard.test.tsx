@@ -39,6 +39,15 @@ describe('PP-061 connected dashboard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Track' }))
     expect(screen.getByRole('main').getAttribute('data-view')).toBe('track')
   })
+  it('shows real point gaps and keeps management controls collapsed until requested', async () => {
+    const data = fixture()
+    data.participants[1]!.points = 3; data.participants[1]!.rank = 2; data.season.totalPoints += 3
+    start(data); await screen.findByRole('heading', { name: 'Live Team' })
+    expect(screen.getByText('Leader')).toBeTruthy()
+    expect(screen.getByText(`${data.participants[0]!.points - 3} pts to lead`)).toBeTruthy()
+    expect(document.querySelector('details.race-operations')?.hasAttribute('open')).toBe(false)
+    expect(screen.queryByText('Championship driver')).toBeNull()
+  })
   it('scrubs actual samples and returns to current data without historical health claims', async () => {
     start(); await screen.findByRole('heading', { name: 'Live Team' })
     fireEvent.change(screen.getByLabelText('Live'), { target: { value: '0' } })
@@ -136,6 +145,7 @@ describe('PP-064 recovery and imperfect data', () => {
     await screen.findByText('Review repository setup')
     fireEvent.click(screen.getByText('Review repository setup'))
     expect(document.getElementById('repository-setup')?.hasAttribute('open')).toBe(true)
+    expect(document.querySelector('details.race-operations')?.hasAttribute('open')).toBe(true)
     fireEvent.click(screen.getByText('Retry failed imports'))
     await act(async () => {})
     expect(state.client!.installationSetup).toHaveBeenCalledWith(42, true)

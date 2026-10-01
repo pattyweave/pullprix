@@ -6,7 +6,7 @@ import { Component, useState, type ReactNode } from 'react'
 import { useParams } from '@tanstack/react-router'
 import { SeasonCountdown } from '../setup/SeasonCountdown'
 import { ScoringSummary } from '../setup/ScoringSummary'
-import { Activity, Flag, History, Radio, Users } from 'lucide-react'
+import { Activity, Flag, History, Radio, Users, Settings2 } from 'lucide-react'
 import './team-dashboard.css'
 import { ShareTeamLink } from '../setup/ShareTeamLink'
 import { RACING_MANIFEST } from '../themes'
@@ -66,8 +66,8 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
   const season = data.season.season
   return <main className="team-race" data-view={mobileView}>
     <header className="race-header">
-      <div className="min-w-0"><p className="hud-label text-accent">Team championship</p><h1 className="race-team-name">{teamSetup.organization.name}</h1></div>
-      <div className="race-season"><span className="hud-label">Season {season.id} · {season.phase === 'final_stage' ? RACING_MANIFEST.vocabulary.finalStage : 'Race in progress'}</span><span className="sr-only">Ends {new Date(season.endsAt).toLocaleString()}</span><SeasonCountdown endsAt={season.endsAt} onRollover={() => void refresh()} /></div>
+      <div className="min-w-0"><p className="hud-label text-accent race-header-eyebrow">Team championship</p><h1 className="race-team-name">{teamSetup.organization.name}</h1></div>
+      <div className="race-season"><span className="hud-label">Season {season.id} · {season.phase === 'final_stage' ? RACING_MANIFEST.vocabulary.finalStage : 'Championship'}</span><span className="sr-only">Ends {new Date(season.endsAt).toLocaleString()}</span><SeasonCountdown endsAt={season.endsAt} onRollover={() => void refresh()} /></div>
       <a className="race-action" href={`/teams/${installationId}/history`}><History size={15} aria-hidden="true" />Season history</a>
     </header>
     <div className="race-mobile-nav" aria-label="Dashboard views">
@@ -94,7 +94,7 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
             aria-pressed={person.participantId === selectedRow?.participantId} onClick={() => setSelected(person.participantId)}>
             <span className="w-5 shrink-0 font-mono text-lg text-accent sm:w-8">{person.rank === null ? '—' : `${person.tied ? '=' : ''}${person.rank}`}</span>
             <span className="min-w-0 flex-1"><span className="block break-words font-medium">{person.displayName}</span>
-              <span className="block text-xs text-text-faint">{!historical && !person.active ? 'Inactive driver' : person.points === 0 ? RACING_MANIFEST.vocabulary.notStarted : person.tied ? 'Tied position' : 'Championship driver'}</span></span>
+              <span className="block text-xs text-text-faint">{!historical && !person.active ? 'Inactive driver' : person.points === 0 ? RACING_MANIFEST.vocabulary.notStarted : person.points === frame.rows[0]?.points ? (person.tied ? 'Tied lead' : 'Leader') : `${(frame.rows[0]?.points ?? 0) - person.points} pts to lead${person.tied ? ' · Tied' : ''}`}</span></span>
             <span className="shrink-0 font-mono">{person.points} <span className="text-xs text-text-faint">pts</span></span>
           </button></li>)}</ol>}
         {!historical && frame.rows.length > 0 && frame.totalPoints === 0 && <p className="mt-4 text-sm text-text-faint">No points earned yet. Eligible formal reviews on ready PRs earn championship points. See How championship points work for the rules.</p>}
@@ -106,22 +106,26 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
         {profile ? <dl className="race-driver-stats"><div><dt>Current streak</dt><dd>{profile.streak.current}<span> days</span></dd></div><div><dt>Season best</dt><dd>{profile.streak.best}<span> days</span></dd></div></dl> : <p className="mt-4 text-sm text-text-faint">Driver streaks are available in the live view.</p>}
       </section>}
       </aside>
-      <aside className="race-right" aria-label="Pit wall">
+      <aside className="race-right" aria-label="Pit wall" onClickCapture={event => {
+        if ((event.target as HTMLElement).closest('a[href="#repository-setup"]')) event.currentTarget.querySelector('details.race-operations')?.setAttribute('open', '')
+      }}>
     <section className="race-panel" aria-labelledby="health-heading"><p className="hud-label mb-2">Pit wall</p><h2 id="health-heading" className="text-xl font-semibold">Review health</h2>
       {historical ? <p className="mt-3 text-text-faint">Review health is available in the live view.</p> : <>
-        <p className="mt-2 text-sm text-text-faint">{health.status === 'partial' ? 'Some review data is still incomplete. These metrics reflect verified activity so far; check repository setup or refresh shortly.' : 'Based on verified review activity.'}</p>
+        {health.status === 'partial' && <p className="mt-2 text-sm text-text-faint">Some review data is still incomplete. These metrics reflect verified activity so far; check repository setup or refresh shortly.</p>}
         <dl className="race-health-metrics">
           <Metric label="Useful reviews" value={current?.usefulReviews ?? 'Unavailable'} />
           <Metric label="Review participation" value={current?.participation.percentage == null ? 'Unavailable' : `${Math.round(current.participation.percentage)}%`} />
           <Metric label="Waiting over 24 hours" value={health.agingQueue.count} />
           <Metric label="Median first review" value={current?.medianFirstReviewMs == null ? 'Unavailable' : `${Math.round(current.medianFirstReviewMs / 60000)} min`} />
         </dl>
+        <details className="race-data-notes"><summary>About review data</summary><p className="mt-3 text-xs text-text-faint">Based on verified review activity.</p>
         {health.baseline === null && <p className="mt-5 text-xs text-text-faint">A verified pre-season baseline is not available yet.</p>}
         {health.agingQueue.unknownReadinessCount > 0 && <p className="mt-2 text-xs text-text-faint">Readiness timing is unknown for {health.agingQueue.unknownReadinessCount} pull requests.</p>}
+        </details>
       </>}
     </section>
     <TeamNotice data={data} />
-    <section className="race-panel race-operations"><p className="hud-label">Team controls</p>
+    <details className="race-panel race-operations"><summary className="race-menu-heading"><Settings2 size={16} aria-hidden="true" />Team menu</summary>
     <div className="mt-3 flex flex-wrap gap-3"><button className={button} disabled={refreshing} onClick={() => void refresh()}>{refreshing ? 'Refreshing…' : 'Refresh'}</button><a className="race-action" href="/sign-in?account=1">Switch team</a><a className="race-action" href={`/teams/${installationId}/history`}>Season history</a></div>
     {teamSetup.canManage && <ShareTeamLink installationId={installationId} />}
     <details id="repository-setup" className="mt-4 border-t border-line pt-4"><summary className="cursor-pointer font-semibold">Repository setup · {teamSetup.repositories.filter(r => r.status === 'completed').length} of {teamSetup.repositories.length} imported</summary>
@@ -134,7 +138,8 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
     </details>
     <ScoringSummary />
     <div className="mt-5 flex gap-4 text-xs text-text-faint"><a href="/privacy" className="underline">Privacy</a><a href="/pilot" className="underline">Help</a></div>
-    </section>
+    </details>
+    <p className="race-updated">Updates every 15 seconds · Last updated <time dateTime={data.season.generatedAt}>{new Date(data.season.generatedAt).toLocaleTimeString()}</time></p>
     </aside>
     </div>
     <section className="race-transport" aria-labelledby="replay-heading">
@@ -142,7 +147,6 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
       <div className="race-scrubber"><input id="season-replay" aria-describedby="replay-help" type="range" min="0" max={data.snapshots.length} value={index} step="1"
         disabled={!data.snapshots.length} onChange={event => setSampledAt(data.snapshots[Number(event.target.value)]?.sampledAt ?? null)} /><p id="replay-help" className="text-xs text-text-faint">{data.snapshots.length ? 'Daily points history · Corrected with scoring' : 'Daily replay appears after the first snapshot'}</p></div>
       <button className={button} disabled={!historical} onClick={() => setSampledAt(null)}>Back to live</button>
-      <p className="race-updated">Updates every 15 seconds<br />Last updated <time dateTime={data.season.generatedAt}>{new Date(data.season.generatedAt).toLocaleTimeString()}</time></p>
     </section>
   </main>
 }
