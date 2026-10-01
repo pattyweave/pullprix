@@ -2402,7 +2402,7 @@ Validation: connected dashboard and track adapter tests; production build and li
 
 ## PP-090 — Connected dashboard design pass 4
 
-**Status:** IN PROGRESS — implementation validated; production visual review pending.
+**Status:** DONE
 
 - Play/pause through recorded snapshots without interpolating scores; pause on manual scrubbing or hidden tabs, stop at the final recorded snapshot, and explicitly return to Live.
 - Label the first recorded snapshot, Live endpoint, and current sample position.
@@ -2410,4 +2410,4 @@ Validation: connected dashboard and track adapter tests; production build and li
 - Keep metrics ahead of expandable data-status explanations and move lap-distance guidance into scoring rules.
 - Correct singular day labels; preserve the demo and existing scoring/access policies.
 
-Validation: 51 connected frontend tests, production build, lint (existing warnings only).
+Validation: 51 connected frontend tests, production build, lint (existing warnings only), and live five-driver desktop/mobile review. Verified playback advances actual samples, pause and Back to live, grouped labels, and no horizontal overflow at 320px.
