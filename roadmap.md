@@ -2414,10 +2414,12 @@ Validation: 51 connected frontend tests, production build, lint (existing warnin
 
 ## PP-091 — Live review queue and Up next
 
-**Status:** IN PROGRESS
+**Status:** DONE
 
 - Add a linked personal Up next suggestion and an expandable queue in the pit wall.
 - Verify repository access before exposing PR metadata; retain team/session authorization.
 - Exclude drafts, closed PRs and work awaiting author changes; distinguish required review from initial review.
 - Keep personal conflicts visible in the queue, but exclude them from Up next.
 - Refresh the queue once per minute while visible; preserve demo and replay animation.
+
+Validation: application suite (473 tests) plus two added queue routing/polling regressions; 11 database authorization checks including hosted read-only transaction mode; production build and lint (existing warnings only). Backend migrations and product-api deployed; Vercel deployment succeeded; live PR #6 suggestion/list and 375px mobile sidebar verified. Replay and demo unchanged.

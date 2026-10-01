@@ -34,5 +34,10 @@ select throws_ok($$select public.get_review_queue_context(8001)$$,'PT401','sign_
 reset role;
 select ok(not has_function_privilege('anon','public.get_review_queue_context(bigint)','EXECUTE'),'anonymous RPC denied');
 select ok(not has_function_privilege('service_role','public.get_review_queue_context(bigint)','EXECUTE'),'service cannot replace caller');
+insert into auth.sessions(id,user_id) values('50000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000001');
+update public.organization_memberships set installation_verified_until=now()+interval '5 minutes';
+set local role authenticated;
+set local transaction_read_only = true;
+select is(public.get_review_queue_context(8001)->'subject'->>'githubUserId','7001','RPC works in hosted read-only transaction mode');
 select * from finish();
 rollback;
