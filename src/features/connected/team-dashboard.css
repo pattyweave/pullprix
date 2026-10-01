@@ -60,8 +60,8 @@
 .race-season [aria-label='Season countdown'] { font-size:12px; }
 .race-track { inset:0; padding:0; }
 .race-track-map { position:absolute; inset:0; padding:24px 0 90px; }
-.race-track-map svg { transform:scale(1.35); }
-.race-circuit-label { position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:1; }
+.race-track-map svg { transform:translateY(-8px) scale(1.27); }
+.race-circuit-label { position:absolute; top:10px; left:calc(50% - 200px); transform:translateX(-50%); z-index:1; }
 .race-circuit-label>p { font-size:14px; }
 .race-track-caption { position:absolute; bottom:108px; left:50%; transform:translateX(-50%); white-space:nowrap; }
 .race-left,.race-right { top:12px; bottom:20px; gap:12px; }
