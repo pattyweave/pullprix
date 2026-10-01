@@ -27,6 +27,18 @@ describe('PP-061 connected dashboard', () => {
     fireEvent.click(document.querySelector('[data-driver="zero"]')!)
     expect(screen.getByLabelText('Selected driver stats').textContent).toContain('New Driver')
   })
+  it('lets mobile users switch views and inspect the selected driver', async () => {
+    start(); await screen.findByRole('heading', { name: 'Live Team' })
+    fireEvent.click(screen.getByRole('button', { name: 'Standings' }))
+    expect(screen.getByRole('main').getAttribute('data-view')).toBe('standings')
+    fireEvent.click(document.querySelector('[data-driver="zero"]')!)
+    expect(screen.getByLabelText('Selected driver stats').textContent).toContain('New Driver')
+    fireEvent.click(screen.getByRole('button', { name: 'Pit wall' }))
+    expect(screen.getByRole('main').getAttribute('data-view')).toBe('pit')
+    expect(screen.getByText('Switch team').getAttribute('href')).toBe('/sign-in?account=1')
+    fireEvent.click(screen.getByRole('button', { name: 'Track' }))
+    expect(screen.getByRole('main').getAttribute('data-view')).toBe('track')
+  })
   it('scrubs actual samples and returns to current data without historical health claims', async () => {
     start(); await screen.findByRole('heading', { name: 'Live Team' })
     fireEvent.change(screen.getByLabelText('Live'), { target: { value: '0' } })

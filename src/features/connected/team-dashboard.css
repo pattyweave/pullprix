@@ -1,0 +1,47 @@
+/* Connected race canvas only; the demo remains an independent comparison. */
+.team-race { height:calc(100svh - 4rem); min-height:480px; display:flex; flex-direction:column; overflow:hidden; background:radial-gradient(ellipse at 50% 46%, var(--pp-surface), var(--pp-void) 72%); }
+.race-header { display:flex; align-items:center; gap:24px; padding:16px 24px; border-bottom:1px solid var(--pp-line); flex-shrink:0; }
+.race-team-name { font-size:20px; font-weight:600; overflow-wrap:anywhere; }
+.race-season { margin-left:auto; text-align:right; }
+.race-season [aria-label='Season countdown'] { font-size:14px; }
+.race-action { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; font-size:12px; color:var(--pp-text-dim); }
+.race-action:hover { color:var(--pp-accent); }
+.race-stage { position:relative; flex:1; min-height:0; isolation:isolate; }
+.race-track { position:absolute; inset:0 265px; display:flex; flex-direction:column; align-items:center; min-width:0; padding:18px 0 12px; }
+.race-track-map { width:100%; flex:1; min-height:0; }
+.race-circuit-label { text-align:center; flex-shrink:0; pointer-events:none; }
+.race-circuit-label>p { font-size:18px; font-weight:500; letter-spacing:.04em; }
+.race-track-caption { font-size:11px; color:var(--pp-text-faint); text-align:center; padding:0 12px; }
+.race-left,.race-right { position:absolute; top:20px; bottom:20px; width:264px; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:var(--pp-line) transparent; display:flex; flex-direction:column; gap:16px; padding:0 4px 8px; }
+.race-left { left:20px; }.race-right { right:20px; }
+.race-panel { border:1px solid var(--pp-line); border-radius:var(--pp-radius,8px); background:color-mix(in oklch,var(--pp-surface) 72%,transparent); backdrop-filter:blur(16px); padding:18px; flex-shrink:0; min-width:0; }
+.race-panel h2 { font-size:18px; }.race-panel p { overflow-wrap:anywhere; }
+.race-standings { margin:16px -10px 0; display:flex; flex-direction:column; gap:4px; }
+.race-standing { border-left:3px solid; min-height:56px; transition:background .15s,box-shadow .15s; }
+.race-standing.is-selected { background:color-mix(in oklch,var(--pp-accent) 8%,transparent); box-shadow:inset 0 0 18px color-mix(in oklch,var(--pp-accent) 6%,transparent); }
+.race-standing:hover { background:var(--pp-surface); }
+.race-standing>span:first-child { width:18px; font-size:14px; }
+.race-standing .font-medium { font-size:13px; }
+.race-standing .text-xs { font-size:11px; }
+.race-driver { margin-top:auto; }
+.race-driver-rank { font:500 32px/1 var(--font-mono,monospace); }
+.race-driver-stats { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px; }
+.race-driver-stats dt { color:var(--pp-text-faint); font-size:11px; }.race-driver-stats dd { font:500 24px/1.5 monospace; }.race-driver-stats dd span { font:11px sans-serif; color:var(--pp-text-faint); }
+.race-health-metrics { margin-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:20px 12px; }.race-health-metrics dd { font-family:monospace; font-size:22px; overflow-wrap:anywhere; }.race-health-metrics dt { font-size:11px; }
+.race-right>[role=status] { margin-top:0; padding:16px; flex-shrink:0; }
+.race-operations summary { font-size:12px; min-height:44px; cursor:pointer; }
+.race-operations details details { padding:0; }
+.race-transport { display:flex; align-items:center; gap:24px; padding:12px 24px; border-top:1px solid var(--pp-line); background:color-mix(in oklch,var(--pp-surface) 86%,transparent); flex-shrink:0; }
+.race-live-state { display:flex; align-items:center; gap:12px; min-width:130px; }.race-scrubber { flex:1; min-width:0; }.race-scrubber input { width:100%; height:32px; accent-color:var(--pp-accent); cursor:pointer; }.race-updated { font-size:11px; color:var(--pp-text-faint); text-align:right; }
+.race-mobile-nav,.race-mobile-driver { display:none; }
+@media(min-width:1500px) { .race-left,.race-right { width:290px; }.race-track { inset-inline:295px; } }
+@media(max-width:1099px) {
+ .team-race { min-height:520px; }.race-header { padding:12px 16px; gap:12px; }.race-team-name { font-size:17px; }.race-header>.race-action { display:none; }.race-season { max-width:45%; }.race-season>.hud-label { font-size:11px; }
+ .race-mobile-nav { display:flex; gap:8px; padding:8px 16px; border-bottom:1px solid var(--pp-line); flex-shrink:0; }.race-mobile-nav button { display:flex; align-items:center; justify-content:center; gap:8px; flex:1; min-height:44px; font-size:12px; border-radius:6px; }.race-mobile-nav button[aria-pressed=true] { color:var(--pp-accent); background:color-mix(in oklch,var(--pp-accent) 8%,transparent); }
+ .race-track { inset:0; padding-top:12px; }.race-left,.race-right { inset:0; width:auto; padding:16px; display:none; }.race-panel { width:100%; }.race-driver { margin-top:0; }.race-track-caption { font-size:11px; }.race-mobile-driver { display:block; font-size:12px; min-height:44px; color:var(--pp-accent); max-width:100%; overflow-wrap:anywhere; padding:4px 16px; flex-shrink:0; }
+ .team-race[data-view=standings] .race-left,.team-race[data-view=pit] .race-right { display:flex; }.team-race[data-view=standings] .race-track,.team-race[data-view=pit] .race-track { display:none; }
+ .race-transport { flex-wrap:wrap; gap:8px 12px; padding:10px 16px; }.race-live-state { min-width:0; }.race-scrubber { flex-basis:calc(100% - 150px); }.race-updated { margin-left:auto; }.race-scrubber input { height:36px; }.race-scrubber p { font-size:11px; }.race-health-metrics { grid-template-columns:1fr 1fr; }
+}
+@media(prefers-reduced-motion:reduce) { .race-standing { transition:none; } }
+
+.race-attention { flex-shrink:0; min-height:36px; padding:8px 16px; font-size:12px; color:var(--pp-accent); border-bottom:1px solid var(--pp-line); text-align:left; }
