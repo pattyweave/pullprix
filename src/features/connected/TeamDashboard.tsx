@@ -93,7 +93,6 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
             style={{ borderLeftColor: drivers.find(driver => driver.id === person.participantId)?.color }}
             aria-pressed={person.participantId === selectedRow?.participantId} onClick={() => setSelected(person.participantId)}>
             <span className="w-5 shrink-0 font-mono text-lg text-accent sm:w-8">{person.rank === null ? '—' : `${person.tied ? '=' : ''}${person.rank}`}</span>
-            {person.avatarUrl && <img src={person.avatarUrl} alt="" className="h-7 w-7 shrink-0 rounded-full" />}
             <span className="min-w-0 flex-1"><span className="block break-words font-medium">{person.displayName}</span>
               <span className="block text-xs text-text-faint">{!historical && !person.active ? 'Inactive driver' : person.points === 0 ? RACING_MANIFEST.vocabulary.notStarted : person.tied ? 'Tied position' : 'Championship driver'}</span></span>
             <span className="shrink-0 font-mono">{person.points} <span className="text-xs text-text-faint">pts</span></span>
