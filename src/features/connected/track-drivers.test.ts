@@ -15,3 +15,15 @@ it('keeps tied drivers at equal distance, preserves identity on reordering, and 
  expect(trackDrivers([...rows].reverse())[1]!.color).toBe(drivers[0]!.color)
  expect(trackDrivers(adaptFrame(data,data.snapshots[0]!.sampledAt).rows).map(d=>d.progress)).toEqual([0])
 })
+it('identifies the selected driver and suppresses labels at the same lap position', () => {
+ const rows=adaptFrame(fixture(),null).rows
+ rows[1]!.points=rows[0]!.points
+ const first=trackDrivers(rows,'reviewer')
+ expect(first[0]!.label).toBe('Real Reviewer')
+ expect(first[1]!.label).toBeUndefined()
+ const second=trackDrivers(rows,'zero')
+ expect(second[1]!.label).toBe('New Driver')
+ expect(second[0]!.label).toBeUndefined()
+ rows[1]!.points+=90
+ expect(trackDrivers(rows,'reviewer')[1]!.label).toBeUndefined()
+})

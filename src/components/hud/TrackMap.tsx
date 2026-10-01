@@ -163,6 +163,7 @@ export function TrackMap({
             radius={radius}
             k={k}
             labelSize={Math.round(vbW / 90)}
+            labelAnchor={d.label && d.label.length > 3 ? (sampler.pointAt(d.progress).x > vbX + vbW / 2 ? 'end' : 'start') : 'middle'}
             onSelect={onSelectDriver}
           />
         ))}
@@ -183,6 +184,7 @@ function DriverMarker({
   radius,
   k,
   labelSize,
+  labelAnchor,
   onSelect,
 }: {
   driver: TrackDriver
@@ -190,6 +192,7 @@ function DriverMarker({
   radius: number
   k: number
   labelSize: number
+  labelAnchor: 'start' | 'end' | 'middle'
   onSelect?: (id: string) => void
 }) {
   const [hovered, setHovered] = useState(false)
@@ -241,7 +244,8 @@ function DriverMarker({
       {d.label && (
         <text
           y={labelY}
-          textAnchor="middle"
+          textAnchor={labelAnchor}
+          style={d.label.length > 3 ? { paintOrder: 'stroke', stroke: 'var(--pp-void)', strokeWidth: 2 } : undefined}
           className="fill-text font-mono"
           fontSize={labelSize}
           letterSpacing={1}

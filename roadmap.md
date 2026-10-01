@@ -2385,3 +2385,17 @@ PP-087
 P1 tickets should be completed before or during the first design-partner pilot
 when they materially improve support, measurement, or the finale. P2 tickets
 must not delay the first validated season.
+
+## PP-089 — Connected dashboard design pass 3
+
+**Status:** DONE
+
+- Place the selected driver panel directly below standings.
+- Identify selected track drivers by full name; suppress other labels at the same lap position while preserving equal scores and marker selection.
+- Improve supporting text contrast within the connected dashboard.
+- Refine replay to a thin timeline with accessible keyboard and touch controls and an explicit historical timestamp.
+- Distinguish pending scoring, imports, import failures, and unknown timing without promising automatic resolution.
+- Rename Useful reviews to Qualifying reviews and explain the once-per-reviewer-per-PR count.
+- Preserve the demo design and all scoring/access behavior.
+
+Validation: connected dashboard and track adapter tests; production build and lint; live responsive review.

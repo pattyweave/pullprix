@@ -63,6 +63,13 @@ describe('PP-061 connected dashboard', () => {
       expect(stripe.compareDocumentPosition(marker) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     }
   })
+  it('explains pending scoring and names the qualifying review metric', async () => {
+    start(); await screen.findByRole('heading', { name: 'Live Team' })
+    expect(screen.getByText('Qualifying reviews')).toBeTruthy()
+    expect(screen.getByText(/1 pull request awaiting scoring. These metrics/)).toBeTruthy()
+    expect(screen.getByText(/Counted once per reviewer per PR/)).toBeTruthy()
+    expect(screen.queryByText('Useful reviews')).toBeNull()
+  })
   it('scrubs actual samples and returns to current data without historical health claims', async () => {
     start(); await screen.findByRole('heading', { name: 'Live Team' })
     fireEvent.change(screen.getByLabelText('Live'), { target: { value: '0' } })

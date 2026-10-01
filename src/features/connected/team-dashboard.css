@@ -23,7 +23,7 @@
 .race-standing>span:first-child { width:18px; font-size:14px; }
 .race-standing .font-medium { font-size:13px; }
 .race-standing .text-xs { font-size:11px; }
-.race-driver { margin-top:auto; }
+.race-driver { margin-top:0; }
 .race-driver-rank { font:500 32px/1 var(--font-mono,monospace); }
 .race-driver-stats { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px; }
 .race-driver-stats dt { color:var(--pp-text-faint); font-size:11px; }.race-driver-stats dd { font:500 24px/1.5 monospace; }.race-driver-stats dd span { font:11px sans-serif; color:var(--pp-text-faint); }
@@ -68,7 +68,7 @@
 .race-panel { background:color-mix(in oklch,var(--pp-void) 78%,transparent); padding:16px; border-color:color-mix(in oklch,var(--pp-line) 70%,transparent); }
 .race-standing { min-height:48px; padding-block:8px; }
 .race-standings { margin-top:12px; gap:2px; }
-.race-driver { margin-top:auto; }
+.race-driver { margin-top:0; }
 .race-health-metrics { gap:22px 14px; margin-top:24px; }
 .race-health-metrics dd { font-size:26px; }
 .race-data-notes { margin-top:18px; border-top:1px solid var(--pp-line); }
@@ -99,3 +99,15 @@
  .race-live-state { min-width:0; }.race-updated { margin:0; }
  .race-transport>button { margin-left:auto; }.race-driver { margin-top:0; }
 }
+
+/* Pass three: readable supporting information and a quiet replay timeline. */
+.team-race { --pp-text-faint:oklch(0.70 0.01 270); }
+.race-scrubber input { appearance:none; -webkit-appearance:none; background:transparent; height:44px; margin:0; }
+.race-scrubber input::-webkit-slider-runnable-track { height:3px; border-radius:2px; background:linear-gradient(to right,var(--pp-accent) var(--replay-progress),var(--pp-line-strong) var(--replay-progress)); }
+.race-scrubber input::-moz-range-track { height:3px; border-radius:2px; background:var(--pp-line-strong); }
+.race-scrubber input::-moz-range-progress { height:3px; background:var(--pp-accent); }
+.race-scrubber input::-webkit-slider-thumb { appearance:none; -webkit-appearance:none; height:12px; width:12px; margin-top:-4.5px; border-radius:50%; border:2px solid var(--pp-accent); background:var(--pp-void); }
+.race-scrubber input::-moz-range-thumb { height:9px; width:9px; border-radius:50%; border:2px solid var(--pp-accent); background:var(--pp-void); }
+.race-scrubber input:focus-visible { outline:2px solid var(--pp-accent); outline-offset:2px; border-radius:4px; }
+.race-scrubber input:disabled { opacity:.45; cursor:default; }
+.race-live-state { max-width:155px; flex-shrink:0; }
