@@ -111,3 +111,5 @@
 .race-scrubber input:focus-visible { outline:2px solid var(--pp-accent); outline-offset:2px; border-radius:4px; }
 .race-scrubber input:disabled { opacity:.45; cursor:default; }
 .race-live-state { max-width:155px; flex-shrink:0; }
+.race-track-map [data-driver] text { font-size:9px; letter-spacing:.5px; }
+@media(max-width:1099px) { .race-track-map [data-driver] text { font-size:16px; letter-spacing:0; } }
