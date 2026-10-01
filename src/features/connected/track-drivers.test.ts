@@ -27,3 +27,9 @@ it('identifies the selected driver and suppresses labels at the same lap positio
  rows[1]!.points+=90
  expect(trackDrivers(rows,'reviewer')[1]!.label).toBeUndefined()
 })
+it('shows one neutral group label for an unselected shared track position', () => {
+ const rows=adaptFrame(fixture(),null).rows
+ rows[1]!.points=rows[0]!.points
+ expect(trackDrivers(rows).map(driver=>driver.label)).toEqual([undefined,'2 drivers'])
+ expect(trackDrivers(rows,'zero').map(driver=>driver.label)).toEqual([undefined,'New Driver'])
+})

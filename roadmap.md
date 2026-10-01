@@ -2399,3 +2399,15 @@ must not delay the first validated season.
 - Preserve the demo design and all scoring/access behavior.
 
 Validation: connected dashboard and track adapter tests; production build and lint; live responsive review.
+
+## PP-090 — Connected dashboard design pass 4
+
+**Status:** IN PROGRESS — implementation validated; production visual review pending.
+
+- Play/pause through recorded snapshots without interpolating scores; pause on manual scrubbing or hidden tabs, stop at the final recorded snapshot, and explicitly return to Live.
+- Label the first recorded snapshot, Live endpoint, and current sample position.
+- Match selected row/profile accents to stable driver colors; label unselected shared positions once as a driver count.
+- Keep metrics ahead of expandable data-status explanations and move lap-distance guidance into scoring rules.
+- Correct singular day labels; preserve the demo and existing scoring/access policies.
+
+Validation: 51 connected frontend tests, production build, lint (existing warnings only).

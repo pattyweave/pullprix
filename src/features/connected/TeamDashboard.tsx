@@ -1,12 +1,12 @@
 import { TrackMap } from '../../components/hud/TrackMap'
 import { JACAREPAGUA } from '../track/circuits'
-import { POINTS_PER_LAP } from '../track/points'
+import { useSnapshotReplay } from './useSnapshotReplay'
 import { trackDrivers } from './track-drivers'
 import { Component, useState, type CSSProperties, type ReactNode } from 'react'
 import { useParams } from '@tanstack/react-router'
 import { SeasonCountdown } from '../setup/SeasonCountdown'
 import { ScoringSummary } from '../setup/ScoringSummary'
-import { Activity, Flag, History, Radio, Users, Settings2 } from 'lucide-react'
+import { Activity, Flag, History, Radio, Users, Settings2, Play, Pause } from 'lucide-react'
 import './team-dashboard.css'
 import { ShareTeamLink } from '../setup/ShareTeamLink'
 import { RACING_MANIFEST } from '../themes'
@@ -53,7 +53,8 @@ function ConnectedTeam({ installationId }: { installationId: number }) {
 function LiveDashboard({ data, installationId, refreshing, refresh, retryImports }: {
   data: TeamData; installationId: number; refreshing: boolean; refresh: () => Promise<void>; retryImports: () => Promise<void>
 }) {
-  const [sampledAt, setSampledAt] = useState<string | null>(null), [selected, setSelected] = useState<string | null>(null)
+  const [selected, setSelected] = useState<string | null>(null)
+  const { sampledAt, playing, seek: setSampledAt, toggle, canPlay } = useSnapshotReplay(data.season.season.id, data.snapshots)
   const [mobileView, setMobileView] = useState<'track' | 'standings' | 'pit'>('track')
   const frame = adaptFrame(data, sampledAt), historical = frame.snapshot !== null
   const selectedRow = frame.rows.find(p => p.participantId === selected) ?? frame.rows[0]
@@ -80,7 +81,6 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
       <div className="race-track">
         <div className="race-circuit-label">{(season.themePack?.id !== RACING_MANIFEST.id || season.themePack?.version !== RACING_MANIFEST.version) && <p role="status">The current season is updating. Refresh shortly to load its theme.</p>}<span className="hud-label">{historical ? 'Season replay' : 'Live circuit'}</span><p>Jacarepaguá</p></div>
         <div className="race-track-map"><TrackMap circuit={JACAREPAGUA} drivers={drivers} onSelectDriver={setSelected} /></div>
-        <p className="race-track-caption">{POINTS_PER_LAP} points per lap · Standings show total points</p>
         {selectedRow && <button className="race-mobile-driver" onClick={() => setMobileView('standings')}>{selectedRow.displayName} · {selectedRow.points} pts · View driver</button>}
       </div>
       <aside className="race-left" aria-label="Championship and driver">
@@ -90,7 +90,7 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
         {historical && <p className="mt-3 text-sm">As of {new Date(frame.snapshot!.sampledAt).toLocaleString()}</p>}
         {!frame.rows.length ? <p className="mt-6 text-text-faint">{historical ? 'No participants had joined at this point in the season.' : !teamSetup.repositories.length ? 'Connect a repository to begin importing your team’s activity.' : teamSetup.repositories.some(r => r.status !== 'completed') ? 'Your roster is still being imported. Check repository setup for progress.' : 'No participants yet. Open a PR or submit a formal review in a connected repository to start building your team roster.'}</p> : <ol className="race-standings">{frame.rows.map(person => <li key={person.participantId}>
           <button className={`flex w-full items-center gap-2 rounded px-2 py-3 text-left sm:gap-3 sm:px-3 race-standing ${person.participantId === selectedRow?.participantId ? 'is-selected' : ''}`}
-            style={{ borderLeftColor: drivers.find(driver => driver.id === person.participantId)?.color }}
+            style={{ '--driver-color': drivers.find(driver => driver.id === person.participantId)?.color, borderLeftColor: drivers.find(driver => driver.id === person.participantId)?.color } as CSSProperties}
             aria-pressed={person.participantId === selectedRow?.participantId} onClick={() => setSelected(person.participantId)}>
             <span className="w-5 shrink-0 font-mono text-lg text-accent sm:w-8">{person.rank === null ? '—' : `${person.tied ? '=' : ''}${person.rank}`}</span>
             <span className="min-w-0 flex-1"><span className="block break-words font-medium">{person.displayName}</span>
@@ -100,10 +100,10 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
         {!historical && frame.rows.length > 0 && frame.totalPoints === 0 && <p className="mt-4 text-sm text-text-faint">No points earned yet. Eligible formal reviews on ready PRs earn championship points. See How championship points work for the rules.</p>}
         <p className="mt-5 text-xs text-text-faint">Provisional standings{data.season.pendingPullRequests > 0 ? ` · ${data.season.pendingPullRequests} pull request${data.season.pendingPullRequests === 1 ? '' : 's'} awaiting scoring` : ''}</p>
       </section>
-      {selectedRow && <section className="race-panel race-driver" aria-label="Selected driver stats">
+      {selectedRow && <section className="race-panel race-driver" style={{ '--driver-color': drivers.find(driver => driver.id === selectedRow.participantId)?.color } as CSSProperties} aria-label="Selected driver stats">
         <p className="hud-label">Driver</p>
         <div className="mt-4 flex items-center gap-3"><span className="race-driver-rank" style={{ color: drivers.find(driver => driver.id === selectedRow.participantId)?.color }}>{selectedRow.rank ?? '—'}</span><div className="min-w-0"><h2 className="break-words text-lg font-semibold">{selectedRow.displayName}</h2><p className="hud-label">{selectedRow.points} championship pts</p></div></div>
-        {profile ? <dl className="race-driver-stats"><div><dt>Current streak</dt><dd>{profile.streak.current}<span> days</span></dd></div><div><dt>Season best</dt><dd>{profile.streak.best}<span> days</span></dd></div></dl> : <p className="mt-4 text-sm text-text-faint">Driver streaks are available in the live view.</p>}
+        {profile ? <dl className="race-driver-stats"><div><dt>Current streak</dt><dd>{profile.streak.current}<span> {profile.streak.current === 1 ? 'day' : 'days'}</span></dd></div><div><dt>Season best</dt><dd>{profile.streak.best}<span> {profile.streak.best === 1 ? 'day' : 'days'}</span></dd></div></dl> : <p className="mt-4 text-sm text-text-faint">Driver streaks are available in the live view.</p>}
       </section>}
       </aside>
       <aside className="race-right" aria-label="Pit wall" onClickCapture={event => {
@@ -111,13 +111,14 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
       }}>
     <section className="race-panel" aria-labelledby="health-heading"><p className="hud-label mb-2">Pit wall</p><h2 id="health-heading" className="text-xl font-semibold">Review health</h2>
       {historical ? <p className="mt-3 text-text-faint">Review health is available in the live view.</p> : <>
-        {health.status === 'partial' && <p className="mt-2 text-sm text-text-faint">{data.health.pendingPullRequests > 0 ? `${data.health.pendingPullRequests} pull request${data.health.pendingPullRequests === 1 ? '' : 's'} awaiting scoring. These metrics reflect verified activity so far; totals may change once scoring is resolved.` : health.agingQueue.unknownReadinessCount > 0 ? `Readiness timing is unknown for ${health.agingQueue.unknownReadinessCount} pull requests. Timing metrics may be incomplete.` : 'Some historical review timing is unavailable. These metrics reflect verified activity so far.'}</p>}
+
         <dl className="race-health-metrics">
           <Metric label="Qualifying reviews" value={current?.usefulReviews ?? 'Unavailable'} />
           <Metric label="Review participation" value={current?.participation.percentage == null ? 'Unavailable' : `${Math.round(current.participation.percentage)}%`} />
           <Metric label="Waiting over 24 hours" value={health.agingQueue.count} />
           <Metric label="Median first review" value={current?.medianFirstReviewMs == null ? 'Unavailable' : `${Math.round(current.medianFirstReviewMs / 60000)} min`} />
         </dl>
+        {health.status === 'partial' && <details className="race-data-status"><summary>{data.health.pendingPullRequests > 0 ? `${data.health.pendingPullRequests} PR${data.health.pendingPullRequests === 1 ? '' : 's'} awaiting scoring` : 'Incomplete timing data'}</summary><p className="mt-2 text-sm text-text-faint">{data.health.pendingPullRequests > 0 ? `${data.health.pendingPullRequests} pull request${data.health.pendingPullRequests === 1 ? '' : 's'} awaiting scoring. These metrics reflect verified activity so far; totals may change once scoring is resolved.` : health.agingQueue.unknownReadinessCount > 0 ? `Readiness timing is unknown for ${health.agingQueue.unknownReadinessCount} pull requests. Timing metrics may be incomplete.` : 'Some historical review timing is unavailable. These metrics reflect verified activity so far.'}</p></details>}
         <details className="race-data-notes"><summary>About review data</summary><p className="mt-3 text-xs text-text-faint">Counted once per reviewer per PR for a qualifying, point-earning approval, approval with feedback, formal comment review with feedback, or changes requested. Extra comments and follow-through bonuses do not add another review.</p>
         {health.baseline === null && <p className="mt-5 text-xs text-text-faint">A verified pre-season baseline is not available yet.</p>}
         {health.agingQueue.unknownReadinessCount > 0 && <p className="mt-2 text-xs text-text-faint">Readiness timing is unknown for {health.agingQueue.unknownReadinessCount} pull requests.</p>}
@@ -143,9 +144,10 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
     </aside>
     </div>
     <section className="race-transport" aria-labelledby="replay-heading">
+      <button className="race-play" aria-label={playing ? 'Pause replay' : 'Play replay'} aria-pressed={playing} disabled={!canPlay} onClick={toggle}>{playing ? <Pause size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}</button>
       <div className="race-live-state"><Radio size={16} aria-hidden="true" className="text-accent" /><div><h2 id="replay-heading" className="hud-label">Season replay</h2><label className="font-mono text-sm" htmlFor="season-replay">{historical ? new Date(frame.snapshot!.sampledAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Live'}</label></div></div>
-      <div className="race-scrubber"><input id="season-replay" style={{ '--replay-progress': `${data.snapshots.length ? index / data.snapshots.length * 100 : 0}%` } as CSSProperties} aria-valuetext={historical ? new Date(frame.snapshot!.sampledAt).toLocaleString() : 'Live'} aria-describedby="replay-help" type="range" min="0" max={data.snapshots.length} value={index} step="1"
-        disabled={!data.snapshots.length} onChange={event => setSampledAt(data.snapshots[Number(event.target.value)]?.sampledAt ?? null)} /><p id="replay-help" className="text-xs text-text-faint">{data.snapshots.length ? 'Daily points history · Corrected with scoring' : 'Daily replay appears after the first snapshot'}</p></div>
+      <div className="race-scrubber"><div className="race-timeline-labels"><span>{data.snapshots[0] ? `First snapshot · ${new Date(data.snapshots[0].sampledAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : 'No snapshots yet'}</span><span>Live</span></div><input id="season-replay" style={{ '--replay-progress': `${data.snapshots.length ? index / data.snapshots.length * 100 : 0}%` } as CSSProperties} aria-valuetext={historical ? new Date(frame.snapshot!.sampledAt).toLocaleString() : 'Live'} aria-describedby="replay-help" type="range" min="0" max={data.snapshots.length} value={index} step="1"
+        disabled={!data.snapshots.length} onChange={event => setSampledAt(data.snapshots[Number(event.target.value)]?.sampledAt ?? null)} /><p id="replay-help" className="text-xs text-text-faint">{data.snapshots.length ? `Recorded snapshots · ${historical ? `${index + 1} of ${data.snapshots.length}` : `${data.snapshots.length} available`}` : 'Playback unlocks after two snapshots'}</p></div>
       <button className={button} disabled={!historical} onClick={() => setSampledAt(null)}>Back to live</button>
     </section>
   </main>
