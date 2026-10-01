@@ -151,8 +151,11 @@ export function TrackMap({
           />
         ))}
 
-        {/* Driver markers — path-locked, gliding, selectable, hover-lit */}
-        {drivers.map((d) => (
+        {/* Paint the stripe below every driver, including those at zero points. */}
+        <StartLine sampler={sampler} size={vbH / 28} />
+
+        {/* Selected drivers paint last so tied markers cannot obscure selection. */}
+        {[...drivers.filter(d => !d.highlight), ...drivers.filter(d => d.highlight)].map((d) => (
           <DriverMarker
             key={d.id}
             driver={d}
@@ -164,8 +167,6 @@ export function TrackMap({
           />
         ))}
 
-        {/* Start/finish tick */}
-        <StartLine sampler={sampler} size={vbH / 28} />
       </svg>
     </div>
   )
@@ -262,7 +263,7 @@ function StartLine({
 }) {
   const { x, y, angle } = sampler.pointAt(0)
   return (
-    <g transform={`translate(${x} ${y}) rotate(${angle + 90})`}>
+    <g data-track-start="true" transform={`translate(${x} ${y}) rotate(${angle + 90})`}>
       <rect
         x={-1}
         y={-size / 2}

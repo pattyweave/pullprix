@@ -48,6 +48,21 @@ describe('PP-061 connected dashboard', () => {
     expect(document.querySelector('details.race-operations')?.hasAttribute('open')).toBe(false)
     expect(screen.queryByText('Championship driver')).toBeNull()
   })
+  it('paints the selected tied driver above peers and every marker above the start stripe', async () => {
+    const data = fixture()
+    data.participants[1]!.points = data.participants[0]!.points
+    data.participants[1]!.rank = 1; data.participants[1]!.tied = true; data.participants[0]!.tied = true
+    data.season.totalPoints = data.participants[0]!.points * 2
+    start(data); await screen.findByRole('heading', { name: 'Live Team' })
+    const markerIds = () => [...document.querySelectorAll('[data-driver]')].map(e => e.getAttribute('data-driver'))
+    expect(markerIds().at(-1)).toBe('reviewer')
+    fireEvent.click(document.querySelector('[data-driver="zero"]')!)
+    expect(markerIds().at(-1)).toBe('zero')
+    const stripe = document.querySelector('[data-track-start]')!
+    for (const marker of document.querySelectorAll('[data-driver]')) {
+      expect(stripe.compareDocumentPosition(marker) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    }
+  })
   it('scrubs actual samples and returns to current data without historical health claims', async () => {
     start(); await screen.findByRole('heading', { name: 'Live Team' })
     fireEvent.change(screen.getByLabelText('Live'), { target: { value: '0' } })

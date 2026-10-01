@@ -136,7 +136,7 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
         <a className="inline-flex min-h-11 items-center text-sm underline" href="https://github.com/settings/installations">GitHub installation settings</a>
       </div>}
     </details>
-    <ScoringSummary />
+    <ScoringSummary compact />
     <div className="mt-5 flex gap-4 text-xs text-text-faint"><a href="/privacy" className="underline">Privacy</a><a href="/pilot" className="underline">Help</a></div>
     </details>
     <p className="race-updated">Updates every 15 seconds · Last updated <time dateTime={data.season.generatedAt}>{new Date(data.season.generatedAt).toLocaleTimeString()}</time></p>
