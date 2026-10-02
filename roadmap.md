@@ -2426,10 +2426,12 @@ Validation: application suite (473 tests) plus two added queue routing/polling r
 
 ## PP-092 — Restrained dashboard accents and manual replay
 
-**Status:** IN PROGRESS
+**Status:** DONE
 
 - Carry the selected driver's color into their profile name.
 - Emphasize Up next on hover and keyboard focus; reserve amber for actionable data problems.
 - Compact review-health spacing to bring the queue higher in the sidebar.
 - Return the connected replay bar to a manual timeline with timestamp and Back to live; remove automatic playback until smooth race motion is ready.
 - Preserve the demo, scoring, and queue behavior.
+
+Validation: 54 connected-dashboard tests, production build and lint (existing warnings only); Vercel deployment succeeded. Live keyboard scrubbing, historical timestamp, Back to live, removal of playback controls, and desktop visual refinements verified.
