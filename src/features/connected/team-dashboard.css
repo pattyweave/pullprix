@@ -120,9 +120,6 @@
 .race-driver { border-top-color:var(--driver-color); }
 .race-data-status { margin-top:18px; }
 .race-data-status summary { font-size:12px; color:var(--pp-text-faint); min-height:44px; display:list-item; align-content:center; cursor:pointer; }
-.race-play { flex-shrink:0; display:grid; place-items:center; width:44px; height:44px; border-radius:50%; border:1px solid var(--pp-line-strong); }
-.race-play:hover:enabled { color:var(--pp-accent); border-color:var(--pp-accent); }.race-play:disabled { opacity:.4; cursor:default; }
-.race-timeline-labels { display:flex; justify-content:space-between; gap:12px; font:11px/1.4 monospace; color:var(--pp-text-faint); }
 .race-transport { gap:10px; }.race-live-state { min-width:70px; max-width:120px; }.race-scrubber { min-width:90px; }
 @media(max-width:1099px) { .race-scrubber { flex-basis:100%; order:3; }.race-transport>button:last-child { margin-left:auto; }.race-live-state { max-width:145px; } }
 
@@ -139,3 +136,17 @@
 .race-queue-list ol { max-height: 320px; overflow-y: auto; overscroll-behavior: contain; }
 .race-queue-list li + li { border-top: 1px solid var(--pp-line); }
 .race-queue-list li a { display: grid; gap: 6px; padding: 12px 0; font-size: 13px; overflow-wrap: anywhere; }
+
+/* Restrained emphasis: driver identity, the next action, and actionable trouble. */
+.race-driver h2 { color:var(--driver-color); }
+.race-next-pr { transition:background-color 150ms ease; }
+.race-next-pr:hover, .race-next-pr:focus-visible { background:color-mix(in oklch,var(--pp-accent) 6%,transparent); }
+.race-next-pr:is(:hover,:focus-visible) strong,
+.race-next-pr:is(:hover,:focus-visible) .race-pr-reference { color:var(--pp-accent); }
+.race-team-notice[data-attention], .race-review-queue[data-attention] { border-left:2px solid oklch(0.78 0.14 75); }
+.race-team-notice[data-attention] a, .race-review-queue[data-attention] .race-queue-heading h2 { color:oklch(0.82 0.12 75); }
+.race-health .race-health-metrics { margin-top:16px; gap:14px; }
+.race-health .race-data-status { margin-top:8px; }
+.race-health .race-data-notes { margin-top:8px; }
+.race-health .race-data-notes summary { padding-top:8px; }
+.race-live-state { max-width:155px; }

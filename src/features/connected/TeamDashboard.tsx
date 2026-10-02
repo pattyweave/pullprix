@@ -6,7 +6,7 @@ import { Component, useState, type CSSProperties, type ReactNode } from 'react'
 import { useParams } from '@tanstack/react-router'
 import { SeasonCountdown } from '../setup/SeasonCountdown'
 import { ScoringSummary } from '../setup/ScoringSummary'
-import { Activity, Flag, History, Radio, Users, Settings2, Play, Pause } from 'lucide-react'
+import { Activity, Flag, History, Radio, Users, Settings2 } from 'lucide-react'
 import './team-dashboard.css'
 import { ShareTeamLink } from '../setup/ShareTeamLink'
 import { RACING_MANIFEST } from '../themes'
@@ -55,7 +55,7 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
   data: TeamData; installationId: number; refreshing: boolean; refresh: () => Promise<void>; retryImports: () => Promise<void>
 }) {
   const [selected, setSelected] = useState<string | null>(null)
-  const { sampledAt, playing, seek: setSampledAt, toggle, canPlay } = useSnapshotReplay(data.season.season.id, data.snapshots)
+  const { sampledAt, seek: setSampledAt } = useSnapshotReplay(data.season.season.id, data.snapshots)
   const [mobileView, setMobileView] = useState<'track' | 'standings' | 'pit'>('track')
   const frame = adaptFrame(data, sampledAt), historical = frame.snapshot !== null
   const selectedRow = frame.rows.find(p => p.participantId === selected) ?? frame.rows[0]
@@ -110,7 +110,7 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
       <aside className="race-right" aria-label="Pit wall" onClickCapture={event => {
         if ((event.target as HTMLElement).closest('a[href="#repository-setup"]')) event.currentTarget.querySelector('details.race-operations')?.setAttribute('open', '')
       }}>
-    <section className="race-panel" aria-labelledby="health-heading"><p className="hud-label mb-2">Pit wall</p><h2 id="health-heading" className="text-xl font-semibold">Review health</h2>
+    <section className="race-panel race-health" aria-labelledby="health-heading"><p className="hud-label mb-2">Pit wall</p><h2 id="health-heading" className="text-xl font-semibold">Review health</h2>
       {historical ? <p className="mt-3 text-text-faint">Review health is available in the live view.</p> : <>
 
         <dl className="race-health-metrics">
@@ -146,10 +146,9 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
     </aside>
     </div>
     <section className="race-transport" aria-labelledby="replay-heading">
-      <button className="race-play" aria-label={playing ? 'Pause replay' : 'Play replay'} aria-pressed={playing} disabled={!canPlay} onClick={toggle}>{playing ? <Pause size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}</button>
       <div className="race-live-state"><Radio size={16} aria-hidden="true" className="text-accent" /><div><h2 id="replay-heading" className="hud-label">Season replay</h2><label className="font-mono text-sm" htmlFor="season-replay">{historical ? new Date(frame.snapshot!.sampledAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : 'Live'}</label></div></div>
-      <div className="race-scrubber"><div className="race-timeline-labels"><span>{data.snapshots[0] ? `First snapshot · ${new Date(data.snapshots[0].sampledAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : 'No snapshots yet'}</span><span>Live</span></div><input id="season-replay" style={{ '--replay-progress': `${data.snapshots.length ? index / data.snapshots.length * 100 : 0}%` } as CSSProperties} aria-valuetext={historical ? new Date(frame.snapshot!.sampledAt).toLocaleString() : 'Live'} aria-describedby="replay-help" type="range" min="0" max={data.snapshots.length} value={index} step="1"
-        disabled={!data.snapshots.length} onChange={event => setSampledAt(data.snapshots[Number(event.target.value)]?.sampledAt ?? null)} /><p id="replay-help" className="text-xs text-text-faint">{data.snapshots.length ? `Recorded snapshots · ${historical ? `${index + 1} of ${data.snapshots.length}` : `${data.snapshots.length} available`}` : 'Playback unlocks after two snapshots'}</p></div>
+      <div className="race-scrubber"><input id="season-replay" style={{ '--replay-progress': `${data.snapshots.length ? index / data.snapshots.length * 100 : 0}%` } as CSSProperties} aria-valuetext={historical ? new Date(frame.snapshot!.sampledAt).toLocaleString() : 'Live'} aria-describedby="replay-help" type="range" min="0" max={data.snapshots.length} value={index} step="1"
+        disabled={!data.snapshots.length} onChange={event => setSampledAt(data.snapshots[Number(event.target.value)]?.sampledAt ?? null)} /><p id="replay-help" className="text-xs text-text-faint">{data.snapshots.length ? 'Recorded standings · Drag to explore' : 'History appears as snapshots arrive'}</p></div>
       <button className={button} disabled={!historical} onClick={() => setSampledAt(null)}>Back to live</button>
     </section>
   </main>

@@ -10,7 +10,7 @@ export function TeamNotice({ data }: { data: TeamData }) {
   if (stopped) messages.push('Some repository imports have stopped. Check the repository selection before continuing.')
   if (importing) messages.push(`Importing repository activity (${repos.filter(r => r.status === 'completed').length} of ${repos.length} complete). Scores and review health may change as it arrives. You can leave this page and come back.`)
   if (!messages.length) return null
-  return <section role="status" aria-label="Team data status" className="mt-6 rounded-xl border border-line bg-surface p-5">
+  return <section role="status" aria-label="Team data status" data-attention={failed || stopped || !repos.length || !!data.removedRepositoryCount || undefined} className="race-team-notice mt-6 rounded-xl border border-line bg-surface p-5">
     {messages.map(message => <p key={message} className="mb-2 text-sm">{message}</p>)}
     {(failed || stopped || !repos.length || !!data.removedRepositoryCount) && <p className="text-sm">
       {manager ? <a href="#repository-setup" className="underline" onClick={() => document.getElementById('repository-setup')?.setAttribute('open', '')}>Review repository setup</a> : 'Ask an organization owner to check repository setup.'}

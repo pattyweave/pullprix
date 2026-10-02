@@ -7,7 +7,7 @@ const reason = (item: QueueItem) => item.conflict === 'author' ? 'Your PR' : ite
 export function ReviewQueueView({ data, loading, retry }: { data: ReviewQueueData | null; loading: boolean; retry: () => void }) {
   const [shown, setShown] = useState(5)
   const next = data?.items.find(item => item.id === data.nextId)
-  return <section className="race-panel race-review-queue" aria-labelledby="queue-heading">
+  return <section className="race-panel race-review-queue" data-attention={!loading && (!data || data.status === 'partial') || undefined} aria-labelledby="queue-heading">
     <div className="race-queue-heading"><h2 id="queue-heading" className="hud-label">Up next</h2><span className="hud-label text-accent">Live</span></div>
     {!data ? <p className="mt-3 text-sm text-text-faint">{loading ? 'Checking review queue…' : <>Review queue unavailable. <button className="underline min-h-11" onClick={retry}>Try again</button></>}</p> : <>
       {next ? <a className="race-next-pr" href={next.url} target="_blank" rel="noopener noreferrer">

@@ -2423,3 +2423,13 @@ Validation: 51 connected frontend tests, production build, lint (existing warnin
 - Refresh the queue once per minute while visible; preserve demo and replay animation.
 
 Validation: application suite (473 tests) plus two added queue routing/polling regressions; 11 database authorization checks including hosted read-only transaction mode; production build and lint (existing warnings only). Backend migrations and product-api deployed; Vercel deployment succeeded; live PR #6 suggestion/list and 375px mobile sidebar verified. Replay and demo unchanged.
+
+## PP-092 — Restrained dashboard accents and manual replay
+
+**Status:** IN PROGRESS
+
+- Carry the selected driver's color into their profile name.
+- Emphasize Up next on hover and keyboard focus; reserve amber for actionable data problems.
+- Compact review-health spacing to bring the queue higher in the sidebar.
+- Return the connected replay bar to a manual timeline with timestamp and Back to live; remove automatic playback until smooth race motion is ready.
+- Preserve the demo, scoring, and queue behavior.
