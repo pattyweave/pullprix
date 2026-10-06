@@ -6,6 +6,8 @@ import { ColorModeSelect } from './ColorModeSelect'
 import { LiveDashboard } from '../connected/TeamDashboard'
 import { fixture } from '../connected/fixtures.test-support'
 
+vi.mock('../../config/feature-flags', () => ({ featureFlags: { colorMode: true } }))
+
 vi.mock('../track/usePathSampler', () => ({ usePathSampler: () => ({ length: 100, pointAt: (t: number) => ({ x: t * 100, y: 0, angle: 0 }) }) }))
 
 afterEach(() => {

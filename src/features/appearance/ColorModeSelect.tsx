@@ -2,9 +2,11 @@ import { ChevronDown, Monitor, Moon, Sun } from 'lucide-react'
 
 import { useColorMode } from './context'
 import { parseColorMode } from './appearance'
+import { featureFlags } from '../../config/feature-flags'
 
 export function ColorModeSelect() {
   const { mode, setMode } = useColorMode()
+  if (!featureFlags.colorMode) return null
   const Icon = mode === 'system' ? Monitor : mode === 'light' ? Sun : Moon
 
   return (

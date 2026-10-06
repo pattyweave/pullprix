@@ -8,7 +8,9 @@ import { ColorModeProvider } from './ColorModeProvider'
 import { ColorModeSelect } from './ColorModeSelect'
 import html from '../../../index.html?raw'
 
-const bootstrap = html.match(/<script>([\s\S]*?)<\/script>/)![1]!
+vi.mock('../../config/feature-flags', () => ({ featureFlags: { colorMode: true } }))
+
+const bootstrap = html.match(/<script>([\s\S]*?)<\/script>/)![1]!.replaceAll('__COLOR_MODE_ENABLED__', 'true')
 let media: MediaQueryList
 
 beforeEach(() => {

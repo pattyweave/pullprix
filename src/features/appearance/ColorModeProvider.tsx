@@ -2,11 +2,17 @@ import { useLayoutEffect, useState, type ReactNode } from 'react'
 
 import { applyColorMode, COLOR_MODE_KEY, parseColorMode, readColorMode, type ColorMode } from './appearance'
 import { ColorModeContext } from './context'
+import { featureFlags } from '../../config/feature-flags'
 
 export function ColorModeProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState(readColorMode)
+  const [preference, setMode] = useState(readColorMode)
+  const mode = featureFlags.colorMode ? preference : 'dark'
 
   useLayoutEffect(() => {
+    if (!featureFlags.colorMode) {
+      applyColorMode('dark', false)
+      return
+    }
     const media = window.matchMedia('(prefers-color-scheme: dark)')
     const apply = () => { applyColorMode(mode, media.matches) }
     apply()
@@ -28,6 +34,7 @@ export function ColorModeProvider({ children }: { children: ReactNode }) {
   }, [mode])
 
   function chooseMode(next: ColorMode) {
+    if (!featureFlags.colorMode) return
     setMode(next)
     try {
       window.localStorage.setItem(COLOR_MODE_KEY, next)

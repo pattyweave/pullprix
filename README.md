@@ -28,7 +28,18 @@ npm run dev
 Vite serves the application at `http://127.0.0.1:5173` by default. The landing
 page and demo remain fully functional without Supabase running.
 
-The header's color mode selector offers Dark, Light, and System. Dark is the
+Release flags live in `src/config/feature-flags.ts` as named booleans and change
+through normal code review and deployment. Gate both controls and behavior,
+keep a usable disabled default, and cover both flag states in tests. No external
+flag service or runtime account configuration is required.
+
+`featureFlags.colorMode` is currently `false`: the selector is hidden and the
+app stays dark, including before the first paint. Saved Light/System choices
+are ignored and preserved. To release appearance switching, set this flag to
+`true` and rebuild/restart Vite; the same flag controls the pre-paint HTML script
+and the React app.
+
+When enabled, the header's color mode selector offers Dark, Light, and System. Dark is the
 default; choices are saved in this browser and synchronized between tabs.
 System follows the operating system's appearance, including changes while the
 app is open. The saved mode is applied before the first paint to avoid a theme

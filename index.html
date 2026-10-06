@@ -7,10 +7,11 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0d0f10" />
-    <!-- Apply the saved appearance before styles paint. Keep the key/default
-         aligned with src/features/appearance/appearance.ts. -->
+    <!-- Vite injects the code-controlled release flag before styles paint.
+         Keep the key/default aligned with features/appearance/appearance.ts. -->
     <script>
       (() => {
+        if (!__COLOR_MODE_ENABLED__) return;
         let mode = 'dark';
         try { mode = localStorage.getItem('pull-prix:color-mode'); } catch {}
         const light = mode === 'light' || (mode === 'system' && !window.matchMedia('(prefers-color-scheme: dark)').matches);
