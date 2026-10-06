@@ -2438,9 +2438,11 @@ Validation: 54 connected-dashboard tests, production build and lint (existing wa
 
 ## PP-093 — Distinct team driver colors
 
-**Status:** IN PROGRESS
+**Status:** DONE
 
 - Replace independent ID-hash hues with a curated, distinct team palette.
 - Assign by stable participant identity order, never points or rank.
 - Use the full current/historical roster for replay so missing drivers do not shift colors.
 - Keep marker, standings, and profile accents consistent; preserve demo styling.
+
+Validation: 56 connected-dashboard tests, production build and lint (existing warnings only), Vercel success, and live five-driver palette/selection verified. StrictMode test clock pinned to its fixture season to avoid an unrelated season-end refresh.
