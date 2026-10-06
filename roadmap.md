@@ -2435,3 +2435,12 @@ Validation: application suite (473 tests) plus two added queue routing/polling r
 - Preserve the demo, scoring, and queue behavior.
 
 Validation: 54 connected-dashboard tests, production build and lint (existing warnings only); Vercel deployment succeeded. Live keyboard scrubbing, historical timestamp, Back to live, removal of playback controls, and desktop visual refinements verified.
+
+## PP-093 — Distinct team driver colors
+
+**Status:** IN PROGRESS
+
+- Replace independent ID-hash hues with a curated, distinct team palette.
+- Assign by stable participant identity order, never points or rank.
+- Use the full current/historical roster for replay so missing drivers do not shift colors.
+- Keep marker, standings, and profile accents consistent; preserve demo styling.

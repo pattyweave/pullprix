@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { trackDrivers } from './track-drivers'
+import { driverColors, trackDrivers } from './track-drivers'
 import { adaptFrame } from './adapter'
 import { fixture } from './fixtures.test-support'
 it('maps real points to demo-compatible lap distance, including zero and multiple laps', () => {
@@ -32,4 +32,25 @@ it('shows one neutral group label for an unselected shared track position', () =
  rows[1]!.points=rows[0]!.points
  expect(trackDrivers(rows).map(driver=>driver.label)).toEqual([undefined,'2 drivers'])
  expect(trackDrivers(rows,'zero').map(driver=>driver.label)).toEqual([undefined,'New Driver'])
+})
+
+it('assigns distinct curated colors to a five-driver team regardless of rank or selection', () => {
+ const base=adaptFrame(fixture(),null).rows[0]!
+ const rows=['a','b','c','d','e'].map((participantId,i)=>({...base,participantId,points:i*8,rank:i+1}))
+ const colors=driverColors(rows.map(row=>row.participantId))
+ const drivers=trackDrivers(rows,'a',colors)
+ expect(new Set(drivers.map(driver=>driver.color)).size).toBe(5)
+ expect(driverColors(['e','d','c','b','a'])).toEqual(colors)
+ for(const driver of trackDrivers([...rows].reverse(),'e',colors)) {
+   expect(driver.color).toBe(drivers.find(original=>original.id===driver.id)!.color)
+ }
+})
+it('keeps full-roster colors when replay contains only a subset of drivers', () => {
+ const base=adaptFrame(fixture(),null).rows[0]!
+ const rows=['a','b','c','d','e'].map(participantId=>({...base,participantId}))
+ const colors=driverColors(rows.map(row=>row.participantId))
+ const live=trackDrivers(rows,undefined,colors)
+ const replay=trackDrivers([rows[3]!],undefined,colors)
+ expect(replay[0]!.color).toBe(live[3]!.color)
+ expect(new Set(driverColors(Array.from({length:30},(_,i)=>String(i))).values()).size).toBe(30)
 })

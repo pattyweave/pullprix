@@ -130,6 +130,9 @@ describe('PP-061 connected dashboard', () => {
     expect(state.client.installationSetup).toHaveBeenCalledWith(43, false)
   })
   it('deduplicates StrictMode mounts and still renders the loaded team', async () => {
+    // Keep the fixture season active; season-end refresh is a separate behavior.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-09-28T20:00:00Z'))
     state.client = mockClient(); window.history.replaceState({}, '', '/teams/42')
     render(<StrictMode><TeamPage /></StrictMode>)
     await screen.findByRole('heading', { name: 'Live Team' })

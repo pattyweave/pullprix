@@ -1,8 +1,8 @@
 import { TrackMap } from '../../components/hud/TrackMap'
 import { JACAREPAGUA } from '../track/circuits'
 import { useSnapshotReplay } from './useSnapshotReplay'
-import { trackDrivers } from './track-drivers'
-import { Component, useState, type CSSProperties, type ReactNode } from 'react'
+import { driverColors, trackDrivers } from './track-drivers'
+import { Component, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useParams } from '@tanstack/react-router'
 import { SeasonCountdown } from '../setup/SeasonCountdown'
 import { ScoringSummary } from '../setup/ScoringSummary'
@@ -63,7 +63,12 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
   const health = data.health.health, current = health.current
   const index = frame.snapshot ? data.snapshots.findIndex(s => s.sampledAt === frame.snapshot!.sampledAt) : data.snapshots.length
   const teamSetup = data.setup
-  const drivers = trackDrivers(frame.rows, selectedRow?.participantId)
+  // Use the full roster, including historical-only participants, for every frame.
+  const colors = useMemo(() => driverColors([
+    ...data.participants.map(person => person.participantId),
+    ...data.snapshots.flatMap(snapshot => snapshot.participants.map(person => person.participantId)),
+  ]), [data.participants, data.snapshots])
+  const drivers = trackDrivers(frame.rows, selectedRow?.participantId, colors)
   const needsAttention = !teamSetup.repositories.length || teamSetup.repositories.some(r => r.status !== 'completed') || !!data.removedRepositoryCount
   const season = data.season.season
   return <main className="team-race" data-view={mobileView}>
