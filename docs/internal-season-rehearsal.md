@@ -143,7 +143,60 @@ external invitations, confirm the policy's actual legal operator, hosting/log
 retention disclosures, and the agreed reachable pilot contact. Keep the existing
 founder-contact wording until aliases are genuinely monitored.
 
-The browser tool's prior localhost-policy block remains in effect; no alternate
-browser or network route was used to circumvent it. User-performed browser
-checks are the remaining visual evidence. The local pilot guide URL is
+Historical note: earlier browser checks were blocked. Local browser verification
+subsequently worked during PP-088–PP-095; that earlier restriction is not a current blocker. The local pilot guide URL is
 http://127.0.0.1:5173/pilot (the earlier chat link had a host typo).
+
+
+## October 6 pilot-readiness pass
+
+Hosted read-only audit at 20:40 UTC:
+
+- October boundary: October 5, 12:00 UTC; next boundary November 2, 12:00 UTC.
+- Piss Boys Studio September archive completed October 6 at 12:00:01 UTC,
+  immediately after the 24-hour grace window, with 10 saved points.
+- Pull Prix September retains 54 effective ledger points. Its archive remains
+  finalizing because PR #1 has a September `credit_unknown` review. PR #1 is
+  closed; source and computed revisions both equal 13. Re-running the same
+  scoring input or closing PRs cannot supply the missing historical evidence.
+- No queued, processing, retrying or failed background jobs at audit time.
+- No effective October score components at audit time; September points remain
+  in September. No production scores, archives or organization records changed.
+- Focused season activation/snapshot/finalization/history tests: 23 passed.
+- Local Docker daemon unavailable, so the SQL lifecycle/deletion bridge was not
+  rerun. Earlier passing bridge evidence is historical, not a fresh result.
+
+Re-run the read-only summary with:
+
+```sh
+supabase db query --linked --file scripts/pilot-readiness-audit.sql
+```
+
+Still needed:
+
+1. Visual production archive check with an authenticated team session and fresh
+   second-account/denied-account access checks.
+2. A legitimate new qualifying review: record submission UTC, first visible
+   points UTC, and backend processing timestamps. Measure the whole journey.
+3. Explicitly identify a disposable installation before uninstall/deletion.
+   Neither existing team is implicitly authorized as the deletion target.
+4. For the old unknown review, inspect retained evidence before considering a
+   narrowly scoped support resolution. Do not invent eligibility, silently erase
+   the review, or bypass finalization readiness to mark the checklist complete.
+5. Confirm support/privacy aliases and inbound/reply tests before publishing them.
+
+Mail DNS currently points to Private Email (mx1/mx2.privateemail.com). Public
+queries returned no apex TXT or _dmarc TXT records. MX presence does not confirm
+that either requested mailbox exists or receives mail. No messages were sent and
+no DNS settings were changed. Ask the mailbox provider for its current outbound
+SPF/DKIM settings when enabling replies; test actual delivery before changing the
+published contact. Existing private founder contact stays in place meanwhile.
+
+### October 6 contact verification completed
+
+Patrick confirmed both support@pullprix.com and privacy@pullprix.com receive
+mail and can reply. Published these contacts in the shared contact component
+used by privacy, terms and the pilot guide. Mailbox delivery is user-verified;
+no test messages were sent by the agent. This supersedes the pending mailbox
+item above, but does not complete the remaining PP-086 live-account, timing,
+or disposable-installation checks.

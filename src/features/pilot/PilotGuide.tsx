@@ -29,9 +29,9 @@ export function PilotGuide() {
     <section className="mt-8"><h2 className="text-xl font-semibold">If something looks wrong</h2>
       <dl className="mt-3 space-y-4">
         <div><dt className="font-semibold">No team access</dt><dd>Check which GitHub account you used. Ask an owner to confirm organization membership or access to a selected repository.</dd></div>
-        <div><dt className="font-semibold">Import unfinished or failed</dt><dd>Check repository setup on the dashboard. Managers can retry a failed import; contact Patrick if it fails again.</dd></div>
-        <div><dt className="font-semibold">A score is missing</dt><dd>Allow processing time, refresh, and check the scoring rules. If it still looks wrong, send the PR link and approximate review time privately to Patrick. Do not create extra reviews to test for points.</dd></div>
-        <div><dt className="font-semibold">Leaving the pilot</dt><dd>An owner can uninstall the app in GitHub. Uninstalling the last installation starts team-data cleanup. For a verified deletion request or personal-data question, contact Patrick. See the <a className="underline" href="/privacy">retention and deletion policy</a>.</dd></div>
+        <div><dt className="font-semibold">Import unfinished or failed</dt><dd>Check repository setup on the dashboard. Managers can retry a failed import; email <a className="underline" href="mailto:support@pullprix.com">support@pullprix.com</a> if it fails again.</dd></div>
+        <div><dt className="font-semibold">A score is missing</dt><dd>Allow processing time, refresh, and check the scoring rules. If it still looks wrong, email the PR link and approximate review time to <a className="underline" href="mailto:support@pullprix.com">support@pullprix.com</a>. Do not create extra reviews to test for points.</dd></div>
+        <div><dt className="font-semibold">Leaving the pilot</dt><dd>An owner can uninstall the app in GitHub. Uninstalling the last installation starts team-data cleanup. For a verified deletion request or personal-data question, email <a className="underline" href="mailto:privacy@pullprix.com">privacy@pullprix.com</a>. See the <a className="underline" href="/privacy">retention and deletion policy</a>.</dd></div>
       </dl>
     </section>
     <section className="mt-8 rounded border border-line p-5"><h2 className="mb-3 text-xl font-semibold">Pilot support</h2><PilotContact />

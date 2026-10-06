@@ -3,7 +3,7 @@ function Document({ title, children }: { title: string; children: ReactNode }) {
   return <main className="mx-auto max-w-2xl px-6 py-12 leading-relaxed">
     <a className="text-sm underline" href="/sign-in">Back to your account</a>
     <h1 className="mt-5 text-3xl font-semibold">{title}</h1>
-    <p className="mt-3 text-sm text-text-faint">Private pilot · Updated September 29, 2026</p>
+    <p className="mt-3 text-sm text-text-faint">Private pilot · Updated October 6, 2026</p>
     <p className="mt-2 text-sm text-text-faint">Operator: Pull Prix</p>
     <div className="mt-8 space-y-8">{children}</div>
   </main>
@@ -12,7 +12,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   return <section><h2 className="mb-3 text-xl font-semibold">{title}</h2><div className="space-y-3">{children}</div></section>
 }
 export function PilotContact() {
-  return <p>For support, privacy questions, or a deletion request, contact Patrick, who handles support and privacy requests for Pull Prix, using your private pilot onboarding conversation. Include your GitHub organization name and the type of request. Do not send passwords, access tokens, or private repository content.</p>
+  return <p>For help with onboarding, bugs, or scores, email <a className="underline" href="mailto:support@pullprix.com">support@pullprix.com</a>. For privacy questions, data access, or deletion requests, email <a className="underline" href="mailto:privacy@pullprix.com">privacy@pullprix.com</a>. Patrick handles both inboxes. Include your GitHub organization name and the type of request. Do not send passwords, access tokens, or private repository content.</p>
 }
 export function PrivacyPage() {
   return <Document title="Privacy policy">

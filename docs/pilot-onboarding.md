@@ -2,8 +2,10 @@
 
 Owner: Patrick. Customer guide: `/pilot`. Policies: `/privacy` and `/terms`.
 This ticket prepares a supported pilot, not an automated administration product.
-The existing private onboarding conversation is the support/privacy channel.
-Proposed domain aliases are not published as working mailboxes until tested.
+Support and onboarding: support@pullprix.com. Privacy and deletion requests:
+privacy@pullprix.com. Patrick confirmed inbound delivery and replies work for
+both addresses on October 6, 2026. Patrick handles both inboxes; response hours
+are agreed at kickoff. The private onboarding conversation remains available.
 
 ## Confirmed hosting choice
 
@@ -44,8 +46,9 @@ These are launch checks, not reasons to build more product features:
 - Update policy disclosures for the chosen hosting provider and actual provider
   logs/export retention. Use Pull Prix as the approved pilot operator name;
   add the registered legal name when known. Do not assert an LLC already exists.
-- If switching contact to support@/privacy@, verify inbound delivery, reply-from
-  behavior and monitoring first. Patrick owns both inboxes/aliases.
+- Confirm the pilot contact knows support@pullprix.com and privacy@pullprix.com.
+  Delivery and replies were verified by Patrick on October 6, 2026; agree on
+  response hours and an urgent contact method at kickoff.
 - Run PP-086's rehearsal and record evidence. Do not describe automated tests
   as proof that the full hosted sign-in/install path works for a new team.
 
@@ -91,7 +94,8 @@ points work” for the rules. Standings show review activity, not overall engine
 performance, and aren't a performance-management score.
 
 Setup/help: [PILOT GUIDE URL]. Privacy: [PRIVACY URL].
-Questions, incorrect scores or privacy requests: [AGREED PRIVATE CONTACT].
+Questions or incorrect scores: support@pullprix.com.
+Privacy or deletion requests: privacy@pullprix.com.
 We'll ask for feedback at kickoff, midpoint and after the season.
 
 ## Support triage
