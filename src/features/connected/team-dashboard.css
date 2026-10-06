@@ -1,6 +1,7 @@
 /* Connected race canvas only; the demo remains an independent comparison. */
 .team-race { height:calc(100svh - 4rem); min-height:480px; display:flex; flex-direction:column; overflow:hidden; background:radial-gradient(ellipse at 50% 46%, var(--pp-surface), var(--pp-void) 72%); }
-.race-header { display:flex; align-items:center; gap:24px; padding:16px 24px; border-bottom:1px solid var(--pp-line); flex-shrink:0; }
+/* The scaled circuit may paint above its stage, but must not intercept header links. */
+.race-header { position:relative; z-index:2; display:flex; align-items:center; gap:24px; padding:16px 24px; border-bottom:1px solid var(--pp-line); flex-shrink:0; }
 .race-team-name { font-size:20px; font-weight:600; overflow-wrap:anywhere; }
 .race-season { margin-left:auto; text-align:right; }
 .race-season [aria-label='Season countdown'] { font-size:14px; }

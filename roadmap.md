@@ -2446,3 +2446,11 @@ Validation: 54 connected-dashboard tests, production build and lint (existing wa
 - Keep marker, standings, and profile accents consistent; preserve demo styling.
 
 Validation: 56 connected-dashboard tests, production build and lint (existing warnings only), Vercel success, and live five-driver palette/selection verified. StrictMode test clock pinned to its fixture season to avoid an unrelated season-end refresh.
+
+## PP-094 — Restore season history link clicks
+
+**Status:** IN PROGRESS
+
+- Layer the dashboard header above the scaled circuit SVG, which was intercepting clicks on Season history.
+- Preserve the circuit appearance, history API, authorization, and saved results.
+- Verify actual header-link navigation for both pilot teams after deployment.
