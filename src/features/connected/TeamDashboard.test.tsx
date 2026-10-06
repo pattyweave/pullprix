@@ -23,7 +23,7 @@ describe('PP-061 connected dashboard', () => {
     expect(screen.queryByText('Standings are not available on this setup page yet.')).toBeNull()
     expect(screen.queryByText('Apex Predator')).toBeNull()
     expect(screen.getByText('Copy team link')).toBeTruthy()
-    expect(screen.getByRole('img', { name: 'Suzuka with 2 drivers' })).toBeTruthy()
+    expect(screen.getByRole('group', { name: 'Suzuka with 2 drivers' })).toBeTruthy()
     fireEvent.click(document.querySelector('[data-driver="zero"]')!)
     expect(screen.getByLabelText('Selected driver stats').textContent).toContain('New Driver')
   })
@@ -38,6 +38,31 @@ describe('PP-061 connected dashboard', () => {
     expect(screen.getByText('Switch team').getAttribute('href')).toBe('/sign-in?account=1')
     fireEvent.click(screen.getByRole('button', { name: 'Track' }))
     expect(screen.getByRole('main').getAttribute('data-view')).toBe('track')
+  })
+  it('lets keyboard users select tied drivers even when the visible marker label is suppressed', async () => {
+    const data = fixture()
+    data.participants[1]!.points = data.participants[0]!.points
+    data.participants[1]!.rank = 1
+    data.participants[0]!.tied = data.participants[1]!.tied = true
+    data.season.totalPoints = data.participants[0]!.points * 2
+    start(data)
+    await screen.findByRole('heading', { name: 'Live Team' })
+    const marker = screen.getByRole('button', { name: 'Select New Driver' })
+    expect(marker.getAttribute('tabindex')).toBe('0')
+    fireEvent.keyDown(marker, { key: 'Enter' })
+    expect(screen.getByLabelText('Selected driver stats').textContent).toContain('New Driver')
+    expect(marker.getAttribute('aria-pressed')).toBe('true')
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Select Real Reviewer' }), { key: ' ' })
+    expect(screen.getByLabelText('Selected driver stats').textContent).toContain('Real Reviewer')
+  })
+  it('bounds long circuit labels while retaining the full accessible and profile name', async () => {
+    const data = fixture(), name = 'AlexandriaVeryLongUnbrokenContributorName'
+    data.participants[0]!.displayName = name
+    start(data)
+    await screen.findByRole('heading', { name: 'Live Team' })
+    const marker = screen.getByRole('button', { name: `Select ${name}` })
+    expect(marker.querySelector('text')!.textContent).toContain('…')
+    expect(screen.getByLabelText('Selected driver stats').textContent).toContain(name)
   })
   it('shows real point gaps and keeps management controls collapsed until requested', async () => {
     const data = fixture()
@@ -74,7 +99,7 @@ describe('PP-061 connected dashboard', () => {
     start(); await screen.findByRole('heading', { name: 'Live Team' })
     fireEvent.change(screen.getByLabelText('Live'), { target: { value: '0' } })
     expect(screen.getByText('Review health is available in the live view.')).toBeTruthy()
-    expect(screen.getByRole('img', { name: /with 1 drivers/ })).toBeTruthy()
+    expect(screen.getByRole('group', { name: /with 1 drivers/ })).toBeTruthy()
     fireEvent.click(screen.getByText('Back to live'))
     expect(screen.getByText('50%')).toBeTruthy()
   })

@@ -49,7 +49,6 @@ export function ReplayBar({
           'flex size-9 shrink-0 items-center justify-center rounded-full',
           'border border-line-strong bg-text/[0.04] text-text transition-all duration-200',
           'hover:border-accent/50 hover:text-accent hover:shadow-[0_0_18px_-4px_var(--pp-accent)]',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50',
         )}
       >
         {playing ? (
@@ -71,7 +70,7 @@ export function ReplayBar({
       </div>
 
       {/* Scrubber */}
-      <div className="relative flex-1">
+      <div className="replay-scrubber relative min-w-0 flex-1">
         <div className="flex items-center justify-between">
           <span className="hud-label text-text-faint">Day 1</span>
           <span className="hud-label text-text-faint">Day {totalDays}</span>

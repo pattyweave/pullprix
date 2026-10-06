@@ -1,6 +1,8 @@
-.dashboard-track-lab-controls { height:48px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 20px; border-bottom:1px solid var(--pp-line); font-size:12px; }
-.dashboard-track-lab-controls label { display:flex; align-items:center; gap:10px; }
-.dashboard-track-lab-controls select { background:var(--pp-surface); border:1px solid var(--pp-line); border-radius:4px; padding:6px; }
+.dashboard-track-lab { height:calc(100svh - 4rem); display:flex; flex-direction:column; }
+.dashboard-track-lab-controls { min-height:48px; flex-shrink:0; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 12px; padding:8px 20px; border-bottom:1px solid var(--pp-line); font-size:12px; }
+.dashboard-track-lab-controls label { display:flex; min-width:0; align-items:center; gap:10px; }
+.dashboard-track-lab-controls select { min-width:0; max-width:100%; background:var(--pp-surface); border:1px solid var(--pp-line); border-radius:4px; padding:6px; }
 .dashboard-track-lab-controls>span { color:var(--pp-text-faint); }
-.dashboard-track-lab .team-race { height:calc(100svh - 4rem - 48px); }
+.dashboard-track-lab .team-race { height:auto; min-height:0; flex:1; }
+.dashboard-track-lab-setup { flex:1; overflow-y:auto; }
 @media(max-width:600px) { .dashboard-track-lab-controls { padding:0 12px; }.dashboard-track-lab-controls>span { display:none; } }

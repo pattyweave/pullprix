@@ -83,7 +83,7 @@ export function DashboardView() {
     <>
       {/* ============================ MOBILE (< md) ============================ */}
       {/* Single vertical scroll; replay transport pinned to the bottom. */}
-      <div className="flex h-[calc(100svh-3.25rem)] w-full flex-col md:hidden">
+      <div className="flex h-[calc(100svh-4rem)] w-full flex-col md:hidden">
         <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
           <div className="flex flex-col gap-4">
             {identityPanel}
@@ -103,7 +103,7 @@ export function DashboardView() {
       </div>
 
       {/* ============================ DESKTOP (md+) =========================== */}
-      <div className="relative hidden h-[calc(100svh-3.25rem)] w-full overflow-hidden md:block">
+      <div className="relative hidden h-[calc(100svh-4rem)] w-full overflow-hidden md:block">
         {/* Centre stage — the circuit */}
         <div className="absolute inset-0 flex items-center justify-center">
           <TrackMap selectedDriverId={focusedId} onSelect={setSelectedId} scale={1.2} />

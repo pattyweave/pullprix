@@ -52,7 +52,7 @@ export function AuthPage() {
       {access.organizations.length ? <ul className="mt-6 space-y-3">{access.organizations.map(o => <li key={o.id} className="rounded border border-line p-4">{o.installationId ? <a className="underline" href={`/teams/${o.installationId}`}>{o.name}</a> : o.name}</li>)}</ul> :
         <p className="mt-6">You’re signed in, but no team has granted this account access yet.</p>}
       <button className="mt-6 rounded border border-line px-4 py-2" onClick={() => void signOut()}>Sign out</button>
-    </> : <button className="mt-6 rounded bg-accent px-4 py-2 text-background" onClick={() => void signIn()}>Continue with GitHub</button>}
+    </> : <button className="mt-6 rounded bg-accent px-4 py-2 text-primary-foreground" onClick={() => void signIn()}>Continue with GitHub</button>}
     <p className="mt-8 text-sm text-text-faint">By continuing, you agree to the <a className="underline" href="/terms">pilot terms</a>. Read our <a className="underline" href="/privacy">privacy policy</a> for data use and deletion.</p>
     <p className="mt-4 text-sm"><a className="underline" href="/pilot">Pilot setup and support</a></p>
   </main>

@@ -66,12 +66,13 @@
 .race-circuit-label>p { font-size:14px; }
 .race-track-caption { position:absolute; bottom:108px; left:50%; transform:translateX(-50%); white-space:nowrap; }
 .race-left,.race-right { top:12px; bottom:20px; gap:12px; }
-.race-panel { background:color-mix(in oklch,var(--pp-void) 78%,transparent); padding:16px; border-color:color-mix(in oklch,var(--pp-line) 70%,transparent); }
+.race-panel { background:var(--pp-race-panel-fill); padding:16px; border-color:var(--pp-race-panel-line); box-shadow:var(--pp-race-panel-shadow); }
 .race-standing { min-height:48px; padding-block:8px; }
 .race-standings { margin-top:12px; gap:2px; }
 .race-driver { margin-top:0; }
 .race-health-metrics { gap:22px 14px; margin-top:24px; }
 .race-health-metrics dd { font-size:26px; }
+.race-health-metrics dd[data-unavailable] { font-family:inherit; font-size:14px; line-height:1.5; }
 .race-data-notes { margin-top:18px; border-top:1px solid var(--pp-line); }
 .race-data-notes summary { min-height:44px; padding-top:14px; font-size:11px; color:var(--pp-text-faint); cursor:pointer; }
 .race-menu-heading { display:flex; align-items:center; gap:10px; font-size:12px; color:var(--pp-text-dim); }
@@ -80,7 +81,7 @@
 .race-operations { padding-block:4px; }
 .race-operations[open] { padding-bottom:16px; }
 .race-updated { text-align:left; padding:0 12px; font-size:11px; }
-.race-transport { position:absolute; z-index:2; bottom:20px; left:50%; transform:translateX(-50%); width:calc(100% - 620px); max-width:760px; gap:14px; padding:12px 16px; border:1px solid var(--pp-line); border-radius:12px; background:color-mix(in oklch,var(--pp-surface) 80%,transparent); backdrop-filter:blur(20px); box-shadow:0 12px 40px #0003; }
+.race-transport { position:absolute; z-index:2; bottom:20px; left:50%; transform:translateX(-50%); width:calc(100% - 620px); max-width:760px; gap:14px; padding:12px 16px; border:1px solid var(--pp-line); border-radius:12px; background:color-mix(in oklch,var(--pp-surface) 80%,transparent); backdrop-filter:blur(20px); box-shadow:var(--pp-transport-shadow); }
 .race-live-state { min-width:100px; gap:8px; }
 .race-scrubber p { font-size:11px; }
 @media(min-width:1500px) { .race-track { inset:0; }.race-transport { width:calc(100% - 690px); } }
@@ -102,7 +103,7 @@
 }
 
 /* Pass three: readable supporting information and a quiet replay timeline. */
-.team-race { --pp-text-faint:oklch(0.70 0.01 270); }
+.team-race { --pp-text-faint:var(--pp-race-text-faint); }
 .race-scrubber input { appearance:none; -webkit-appearance:none; background:transparent; height:44px; margin:0; }
 .race-scrubber input::-webkit-slider-runnable-track { height:3px; border-radius:2px; background:linear-gradient(to right,var(--pp-accent) var(--replay-progress),var(--pp-line-strong) var(--replay-progress)); }
 .race-scrubber input::-moz-range-track { height:3px; border-radius:2px; background:var(--pp-line-strong); }
@@ -116,7 +117,7 @@
 @media(max-width:1099px) { .race-track-map [data-driver] text { font-size:16px; letter-spacing:0; } }
 
 /* Pass four: driver identity and discrete replay transport. */
-.race-standing.is-selected { background:color-mix(in oklch,var(--driver-color) 12%,transparent); box-shadow:inset 0 0 18px color-mix(in oklch,var(--driver-color) 8%,transparent); }
+.race-standing.is-selected { background:color-mix(in oklch,var(--driver-color) var(--pp-selected-tint),transparent); box-shadow:none; }
 .race-standing>span:first-child { color:var(--driver-color); }
 .race-driver { border-top-color:var(--driver-color); }
 .race-data-status { margin-top:18px; }
@@ -144,8 +145,8 @@
 .race-next-pr:hover, .race-next-pr:focus-visible { background:color-mix(in oklch,var(--pp-accent) 6%,transparent); }
 .race-next-pr:is(:hover,:focus-visible) strong,
 .race-next-pr:is(:hover,:focus-visible) .race-pr-reference { color:var(--pp-accent); }
-.race-team-notice[data-attention], .race-review-queue[data-attention] { border-left:2px solid oklch(0.78 0.14 75); }
-.race-team-notice[data-attention] a, .race-review-queue[data-attention] .race-queue-heading h2 { color:oklch(0.82 0.12 75); }
+.race-team-notice[data-attention], .race-review-queue[data-attention] { border-left:2px solid var(--pp-notice-border); }
+.race-team-notice[data-attention] a, .race-review-queue[data-attention] .race-queue-heading h2 { color:var(--pp-notice-text); }
 .race-health .race-health-metrics { margin-top:16px; gap:14px; }
 .race-health .race-data-status { margin-top:8px; }
 .race-health .race-data-notes { margin-top:8px; }

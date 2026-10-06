@@ -5,7 +5,7 @@ import { JACAREPAGUA } from '../track/circuits'
 import circuitAssetUrl from '../../assets/tracks/Jacarepagua Tour Vector.svg?url'
 import type { SeasonSnapshot, ThemePack } from './types'
 
-const COLORS = ['#3b82f6', '#ef4444', '#f59e0b', '#10b981', '#a855f7', '#ec4899'] as const
+const COLORS = ['var(--pp-team-blue)', 'var(--pp-team-red)', 'var(--pp-team-amber)', 'var(--pp-team-green)', 'var(--pp-team-violet)', 'var(--pp-team-pink)'] as const
 function hash(value: string) {
   let result = 2166136261
   for (const char of value) result = Math.imul(result ^ char.codePointAt(0)!, 16777619) >>> 0
@@ -88,6 +88,7 @@ export const racingThemePack: ThemePack<RacingMechanicState, RacingViewModel> = 
     const phases: Record<string, string> = { scheduled: 'On the Grid', active: 'Race in Progress', final_stage: 'Final Lap', finalizing: 'Results Pending', completed: 'Chequered Flag' }
     return { title: snapshot.season.name, phaseLabel: phases[snapshot.lifecycleState]!, circuit: JACAREPAGUA, circuitAssetUrl,
       trackDrivers: mechanicState.drivers.map(d => ({ id: d.id, progress: d.progress,
+        name: drivers.find(p => p.id === d.id)!.name,
         label: drivers.find(p => p.id === d.id)!.code, color: drivers.find(p => p.id === d.id)!.color })),
       timingRows: drivers.map(d => ({ id: d.id, position: d.rank, initials: d.code, teamColor: d.color, points: d.points,
         gap: d.rank === null ? d.statusLabel : d.rank === 1 ? (d.tied ? 'Joint lead' : 'Lead') : leader - d.points })),

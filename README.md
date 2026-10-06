@@ -28,6 +28,23 @@ npm run dev
 Vite serves the application at `http://127.0.0.1:5173` by default. The landing
 page and demo remain fully functional without Supabase running.
 
+The header's color mode selector offers Dark, Light, and System. Dark is the
+default; choices are saved in this browser and synchronized between tabs.
+System follows the operating system's appearance, including changes while the
+app is open. The saved mode is applied before the first paint to avoid a theme
+flash. If browser storage is blocked, switching still works for the current page.
+
+Both modes share the design tokens in `src/index.css`, including circuit,
+driver, logo, and HUD effects. The development-only `/track-lab/dashboard`
+route previews the connected dashboard with local sample data. Its Scenario
+selector covers the standard roster, 16 contributors with long names, an empty
+team, and failed imports with unavailable metrics. The Preview selector also
+shows season setup and the roster. These fixtures are excluded from production.
+
+`npm test` includes contrast checks against both palettes and generated driver
+colors, plus tests for saved preferences, system changes, keyboard selection,
+and preserving dashboard selection and replay state when switching modes.
+
 ## Local Supabase
 
 Start the local PostgreSQL, Auth, Realtime, Studio, and Edge Function runtime:

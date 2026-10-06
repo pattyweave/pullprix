@@ -5,13 +5,16 @@ import { RouterProvider } from '@tanstack/react-router'
 
 import './index.css'
 import { router } from './routes/router'
+import { ColorModeProvider } from './features/appearance/ColorModeProvider'
 
 const queryClient = new QueryClient()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <ColorModeProvider>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </ColorModeProvider>
   </StrictMode>,
 )

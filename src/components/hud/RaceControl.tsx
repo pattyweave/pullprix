@@ -159,7 +159,6 @@ export function RaceControl({
             'group flex flex-col gap-3 rounded-md p-3 text-left',
             'bg-text/[0.03] ring-1 ring-inset ring-line transition-all duration-200',
             'hover:bg-text/[0.06] hover:ring-accent/40',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50',
           )}
         >
           <div className="flex items-center justify-between gap-2">

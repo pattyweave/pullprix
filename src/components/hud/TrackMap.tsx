@@ -18,6 +18,8 @@ export interface TrackDriver {
   id: string
   /** Short label rendered beside the marker (e.g. initials). */
   label?: string
+  /** Full name for keyboard and screen-reader selection, including grouped markers. */
+  name?: string
   /** Lap progress, 0 (start/finish) → 1 (full lap). Wraps on each completed lap. */
   progress: number
   /** Marker fill; falls back to the accent colour. */
@@ -95,7 +97,7 @@ export function TrackMap({
         // so the track's empty corners bleed behind the corner panels.
         style={scale !== 1 ? { transform: `scale(${scale})` } : undefined}
         className="h-full max-h-full w-full max-w-full"
-        role="img"
+        role={onSelectDriver ? 'group' : 'img'}
         aria-label={`${circuit.name} with ${drivers.length} drivers`}
       >
         <defs>
@@ -114,26 +116,26 @@ export function TrackMap({
         <path
           d={circuit.path}
           fill="none"
-          stroke="oklch(0.64 0.05 320 / 35%)"
+          stroke="var(--pp-track-halo)"
           strokeWidth={stroke.halo}
           strokeLinecap="round"
           strokeLinejoin="round"
           filter={`url(#${bloomId})`}
         />
-        {/* Dark base ribbon */}
+        {/* Base ribbon */}
         <path
           d={circuit.path}
           fill="none"
-          stroke="oklch(0.30 0.01 320)"
+          stroke="var(--pp-track-ribbon)"
           strokeWidth={stroke.base}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        {/* Bright racing line */}
+        {/* Contrasting racing line */}
         <path
           d={circuit.path}
           fill="none"
-          stroke="oklch(0.92 0.01 300)"
+          stroke="var(--pp-track-line)"
           strokeWidth={stroke.line}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -196,6 +198,10 @@ function DriverMarker({
 }) {
   const [hovered, setHovered] = useState(false)
   const color = d.color ?? 'var(--pp-accent)'
+  // Full identity remains in the selection label and driver panel. Bound the
+  // painted label so long names stay within narrow circuit viewports.
+  const characters = Array.from(d.label ?? '')
+  const label = characters.length > 28 ? `${characters.slice(0, 27).join('')}…` : d.label
   const active = d.highlight || hovered
   const labelY = -((d.highlight ? radius + 4 * k : radius) + 8 * k)
 
@@ -212,11 +218,25 @@ function DriverMarker({
   return (
     <motion.g
       data-driver={d.id}
+      className="track-driver"
+      role={onSelect ? 'button' : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      aria-label={onSelect ? `Select ${d.name ?? d.label ?? 'driver'}` : undefined}
+      aria-pressed={onSelect ? !!d.highlight : undefined}
       style={{ x, y, cursor: onSelect ? 'pointer' : 'default' }}
       onClick={onSelect ? () => onSelect(d.id) : undefined}
+      onKeyDown={onSelect ? event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect(d.id)
+        }
+      } : undefined}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
     >
+      <circle className="track-driver-focus" r={radius + 7 * k} fill="none" stroke="var(--pp-text)" strokeWidth={2 * k} />
       {/* Inner group carries the emphasis scale so it composes with position. */}
       <motion.g
         initial={false}
@@ -249,7 +269,7 @@ function DriverMarker({
           fontSize={labelSize}
           letterSpacing={1}
         >
-          {d.label}
+          {label}
         </text>
       )}
     </motion.g>

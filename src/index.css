@@ -6,8 +6,8 @@
 
 /* =========================================================================
    PULL PRIX — DESIGN SYSTEM
-   A dark, cinematic, telemetry-inspired HUD language.
-   Principles: black canvas · corner-anchored panels · glow as signature ·
+   A telemetry-inspired HUD language, with dark and light appearances.
+   Principles: layered canvas · corner-anchored panels · signal accents ·
    tiny uppercase mono labels vs. oversized display numerics · color = meaning.
    ========================================================================= */
 
@@ -25,12 +25,12 @@
   /* Text ramp */
   --pp-text: oklch(0.97 0 0);              /* primary / values */
   --pp-text-dim: oklch(0.72 0.01 270);     /* secondary */
-  --pp-text-faint: oklch(0.55 0.01 270);   /* labels, captions */
+  --pp-text-faint: oklch(0.68 0.01 270);   /* labels, captions: readable on selected surfaces */
 
   /* ---- Status / signal colors (the only saturated hues) --------------- */
   --pp-success: oklch(0.78 0.18 150);      /* green — OK, fastest, go */
   --pp-warning: oklch(0.82 0.16 80);       /* amber — caution */
-  --pp-danger: oklch(0.64 0.22 25);        /* red — leader marker, out, stop */
+  --pp-danger: oklch(0.66 0.22 25);        /* red — leader marker, out, stop */
   --pp-info: oklch(0.70 0.15 250);         /* blue — neutral telemetry */
   --pp-accent: oklch(0.80 0.19 145);       /* signature green for speed/glow */
 
@@ -39,6 +39,43 @@
   --pp-glow-danger: 0 0 24px oklch(0.64 0.22 25 / 45%);
   --pp-glow-accent: 0 0 32px oklch(0.80 0.19 145 / 50%);
   --pp-glow-soft: 0 0 0 1px var(--pp-line), 0 8px 40px -12px oklch(0 0 0 / 80%);
+  --pp-glow-warning: 0 0 18px oklch(0.82 0.16 80 / 45%);
+
+  /* Effects and circuit colors also follow the selected appearance. */
+  --pp-page-lift: oklch(0.24 0.01 270 / 40%);
+  --pp-panel-highlight: oklch(1 0 0 / 3%);
+  --pp-ghost-top: oklch(0.20 0.005 270 / 70%);
+  --pp-ghost-bottom: oklch(0.16 0.004 270 / 40%);
+  --pp-track-halo: oklch(0.64 0.05 320 / 35%);
+  --pp-track-ribbon: oklch(0.30 0.01 320);
+  --pp-track-line: oklch(0.92 0.01 300);
+  --pp-race-text-faint: oklch(0.70 0.01 270);
+  --pp-race-panel-fill: color-mix(in oklch, var(--pp-void) 78%, transparent);
+  --pp-race-panel-line: color-mix(in oklch, var(--pp-line) 70%, transparent);
+  --pp-race-panel-shadow: none;
+  --pp-notice-border: oklch(0.78 0.14 75);
+  --pp-notice-text: oklch(0.82 0.12 75);
+  --pp-logo-filter: none;
+  --pp-circuit-art-filter: invert(1);
+  --pp-transport-shadow: 0 12px 40px #0003;
+
+  /* Keep driver identity stable; change only its contrast between modes. */
+  --pp-driver-1: #62e3ac;
+  --pp-driver-2: #70b7ff;
+  --pp-driver-3: #ffb36b;
+  --pp-driver-4: #b59aff;
+  --pp-driver-5: #ff7f9f;
+  --pp-driver-6: #66dfeb;
+  --pp-driver-7: #e1df78;
+  --pp-driver-8: #e9edf5;
+  --pp-driver-lightness: 72%;
+  --pp-selected-tint: 6%;
+  --pp-team-blue: #3b82f6;
+  --pp-team-red: #f45c62;
+  --pp-team-amber: #f59e0b;
+  --pp-team-green: #10b981;
+  --pp-team-violet: #b26df9;
+  --pp-team-pink: #ec4899;
 
   /* ---- Collectible rarity tiers (badges) ------------------------------ */
   /* Ascending prestige: cool steel → blue → violet → hot gold. */
@@ -62,8 +99,89 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Light mode keeps the HUD hierarchy, with ink-like signals and softer depth. */
+:root[data-color-mode='light'] {
+  --pp-void: #f5f7f4;
+  --pp-surface: oklch(0.995 0.002 145);
+  --pp-surface-2: oklch(0.945 0.006 145);
+  --pp-line: oklch(0.25 0.015 155 / 12%);
+  --pp-line-strong: oklch(0.25 0.015 155 / 25%);
+
+  --pp-text: oklch(0.25 0.015 155);
+  --pp-text-dim: oklch(0.43 0.015 155);
+  --pp-text-faint: oklch(0.48 0.012 155);
+  --pp-race-text-faint: var(--pp-text-faint);
+  --pp-race-panel-fill: color-mix(in oklch, var(--pp-surface) 94%, transparent);
+  --pp-race-panel-line: var(--pp-line);
+  --pp-race-panel-shadow: 0 2px 12px oklch(0.25 0.015 155 / 4%);
+
+  --pp-success: oklch(0.46 0.12 150);
+  --pp-warning: oklch(0.47 0.10 75);
+  --pp-danger: oklch(0.49 0.19 25);
+  --pp-info: oklch(0.46 0.14 250);
+  --pp-accent: oklch(0.45 0.12 150);
+  --primary-foreground: oklch(0.995 0 0);
+
+  --pp-glow-success: 0 0 12px oklch(0.46 0.12 150 / 12%);
+  --pp-glow-danger: 0 0 12px oklch(0.49 0.19 25 / 12%);
+  --pp-glow-warning: 0 0 12px oklch(0.47 0.10 75 / 12%);
+  --pp-glow-accent: none;
+  --pp-glow-soft: 0 0 0 1px var(--pp-line), 0 8px 32px -12px oklch(0.25 0.015 155 / 14%);
+  --pp-page-lift: oklch(1 0 0 / 65%);
+  --pp-panel-highlight: oklch(1 0 0 / 50%);
+  --pp-ghost-top: oklch(0.995 0.002 145 / 94%);
+  --pp-ghost-bottom: oklch(0.97 0.004 145 / 90%);
+  --pp-track-halo: oklch(0.55 0.035 155 / 10%);
+  --pp-track-ribbon: oklch(0.83 0.014 155);
+  --pp-track-line: oklch(0.43 0.025 155);
+  --pp-notice-border: var(--pp-warning);
+  --pp-notice-text: var(--pp-warning);
+  --pp-logo-filter: brightness(0) opacity(0.85);
+  --pp-circuit-art-filter: none;
+  --pp-transport-shadow: 0 8px 28px oklch(0.25 0.015 155 / 10%);
+
+  --pp-rarity-common: oklch(0.47 0.02 250);
+  --pp-rarity-rare: oklch(0.46 0.14 240);
+  --pp-rarity-epic: oklch(0.47 0.18 300);
+  --pp-rarity-legendary: var(--pp-warning);
+
+  --pp-driver-1: #086a49;
+  --pp-driver-2: #215fa5;
+  --pp-driver-3: #93450f;
+  --pp-driver-4: #6d4ca5;
+  --pp-driver-5: #a33051;
+  --pp-driver-6: #086b76;
+  --pp-driver-7: #68620a;
+  --pp-driver-8: #4d5968;
+  --pp-driver-lightness: 24%;
+  --pp-team-blue: #2467b3;
+  --pp-team-red: #bd3036;
+  --pp-team-amber: #94600b;
+  --pp-team-green: #08734f;
+  --pp-team-violet: #7753b4;
+  --pp-team-pink: #ac3270;
+
+  color-scheme: light;
+}
+
+/* A consistent keyboard outline, including controls that clear native styles. */
+:where(a, button, input, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--pp-accent);
+  outline-offset: 3px;
+}
+
+.replay-scrubber:has(input:focus-visible) {
+  outline: 2px solid var(--pp-accent);
+  outline-offset: 5px;
+  border-radius: var(--pp-radius);
+}
+
+.track-driver:focus-visible { outline: none; }
+.track-driver-focus { opacity: 0; pointer-events: none; }
+.track-driver:focus-visible .track-driver-focus { opacity: 1; }
+
 /* =========================================================================
-   shadcn token remap → dark cinematic theme
+   shadcn token remap → active appearance
    Keeps shadcn component names working while re-skinning everything.
    ========================================================================= */
 :root {
@@ -168,7 +286,7 @@
     background-image:
       radial-gradient(
         ellipse 120% 80% at 50% 0%,
-        oklch(0.24 0.01 270 / 40%),
+        var(--pp-page-lift),
         transparent 60%
       );
     background-attachment: fixed;
@@ -186,6 +304,14 @@
    Class-based so any future screen inherits the language for free.
    ========================================================================= */
 @layer components {
+  .brand-logo {
+    filter: var(--pp-logo-filter);
+  }
+
+  .circuit-art {
+    filter: var(--pp-circuit-art-filter);
+  }
+
   /* ---- Labels & values ------------------------------------------------ */
   .hud-label {
     font-family: var(--font-mono);
@@ -222,7 +348,7 @@
     background:
       linear-gradient(
         180deg,
-        oklch(1 0 0 / 3%),
+        var(--pp-panel-highlight),
         transparent 40%
       ),
       var(--pp-surface);
@@ -237,8 +363,8 @@
   .hud-panel-ghost {
     background: linear-gradient(
       180deg,
-      oklch(0.20 0.005 270 / 70%),
-      oklch(0.16 0.004 270 / 40%)
+      var(--pp-ghost-top),
+      var(--pp-ghost-bottom)
     );
     border: 1px solid var(--pp-line);
     border-radius: var(--pp-radius);
@@ -262,7 +388,7 @@
   }
   .hud-dot--success { background: var(--pp-success); box-shadow: var(--pp-glow-success); }
   .hud-dot--danger  { background: var(--pp-danger);  box-shadow: var(--pp-glow-danger); }
-  .hud-dot--warning { background: var(--pp-warning); box-shadow: 0 0 18px oklch(0.82 0.16 80 / 45%); }
+  .hud-dot--warning { background: var(--pp-warning); box-shadow: var(--pp-glow-warning); }
   .hud-dot--neutral { background: var(--pp-text-faint); }
 
   /* Leading accent bar (team / status color) on list rows. */

@@ -104,7 +104,6 @@ export function TimingTower({
               'outline-none transition-colors duration-200',
               // Subtle hover glow — a faint surface lift, no harsh fill.
               'hover:bg-text/[0.03]',
-              'focus-visible:ring-1 focus-visible:ring-accent/40',
             )}
           >
             {/* Premium animated selection highlight: a shared-layout element

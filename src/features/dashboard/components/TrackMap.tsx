@@ -31,6 +31,7 @@ export function TrackMap({
     const driver = getDriver(p.driverId)
     return {
       id: p.driverId,
+      name: driver?.name,
       label: driver?.code,
       progress: p.progress,
       color: driver?.color,

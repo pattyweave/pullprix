@@ -160,5 +160,5 @@ export function LiveDashboard({ data, installationId, refreshing, refresh, retry
   </main>
 }
 function Metric({ label, value }: { label: string; value: string | number }) {
-  return <div><dt className="text-xs text-text-faint">{label}</dt><dd className="mt-2 text-xl font-semibold">{value}</dd></div>
+  return <div><dt className="text-xs text-text-faint">{label}</dt><dd className="mt-2 text-xl font-semibold" data-unavailable={value === 'Unavailable' || undefined}>{value}</dd></div>
 }

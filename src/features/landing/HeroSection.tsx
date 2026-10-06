@@ -25,7 +25,7 @@ export function HeroSection() {
         <img
           src={lockup}
           alt="Pull Prix"
-          className="h-9 w-auto"
+          className="brand-logo h-9 w-auto"
         />
 
         <Chip>Season-based code review</Chip>

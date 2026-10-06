@@ -16,7 +16,7 @@ export function SeasonWelcome({ season, onRollover, track }: { track?: ReactNode
         <p className="mt-2 text-sm text-text-faint">Ends <time dateTime={season.endsAt}>{new Date(season.endsAt).toLocaleString()}</time> · your local time</p>
       </div>
       <figure className="px-5 py-4">
-        {track ?? <img className="mx-auto h-48 w-full object-contain invert sm:h-60" src={RACING_MANIFEST.assets.circuit} alt="Jacarepaguá circuit layout" />}
+        {track ?? <img className="circuit-art mx-auto h-48 w-full object-contain sm:h-60" src={RACING_MANIFEST.assets.circuit} alt="Jacarepaguá circuit layout" />}
         <figcaption className="mt-2 text-center font-mono text-xs uppercase tracking-widest text-text-faint">Jacarepaguá · This season’s circuit</figcaption>
       </figure>
     </div>

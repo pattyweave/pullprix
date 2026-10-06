@@ -21,7 +21,7 @@ export const drivers: Driver[] = [
     number: 1,
     handle: 'adasterling',
     team: 'Velocity Works',
-    color: '#3b82f6',
+    color: 'var(--pp-team-blue)',
     flag: '🇬🇧',
   },
   {
@@ -31,7 +31,7 @@ export const drivers: Driver[] = [
     number: 11,
     handle: 'mateorivas',
     team: 'Apex Systems',
-    color: '#ef4444',
+    color: 'var(--pp-team-red)',
     flag: '🇪🇸',
   },
   {
@@ -41,7 +41,7 @@ export const drivers: Driver[] = [
     number: 22,
     handle: 'yukitanaka',
     team: 'Redline Labs',
-    color: '#f59e0b',
+    color: 'var(--pp-team-amber)',
     flag: '🇯🇵',
   },
   {
@@ -51,7 +51,7 @@ export const drivers: Driver[] = [
     number: 7,
     handle: 'nadiaok',
     team: 'Monsoon Tech',
-    color: '#10b981',
+    color: 'var(--pp-team-green)',
     flag: '🇳🇬',
   },
   {
@@ -61,7 +61,7 @@ export const drivers: Driver[] = [
     number: 16,
     handle: 'lucabianchi',
     team: 'Apex Systems',
-    color: '#a855f7',
+    color: 'var(--pp-team-violet)',
     flag: '🇮🇹',
   },
   {
@@ -71,7 +71,7 @@ export const drivers: Driver[] = [
     number: 4,
     handle: 'priyamehta',
     team: 'Velocity Works',
-    color: '#ec4899',
+    color: 'var(--pp-team-pink)',
     flag: '🇮🇳',
   },
 ]
