@@ -2449,8 +2449,10 @@ Validation: 56 connected-dashboard tests, production build and lint (existing wa
 
 ## PP-094 — Restore season history link clicks
 
-**Status:** IN PROGRESS
+**Status:** DONE
 
 - Layer the dashboard header above the scaled circuit SVG, which was intercepting clicks on Season history.
 - Preserve the circuit appearance, history API, authorization, and saved results.
 - Verify actual header-link navigation for both pilot teams after deployment.
+
+Validation: production build; Vercel success; actual header-link clicks verified on both pilot dashboards. Piss Boys Studio September archive displays 10 team points and its champion; Pull-Prix history lists September as finalizing.
