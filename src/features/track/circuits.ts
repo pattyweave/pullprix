@@ -1,3 +1,6 @@
+import { SUZUKA, SPA, INTERLAGOS } from './prepared-circuits'
+export { SUZUKA, SPA, INTERLAGOS } from './prepared-circuits'
+
 /**
  * Circuit geometry as data — fully isolated from rendering.
  *
@@ -50,6 +53,9 @@ export const JACAREPAGUA: Circuit = {
 }
 
 export const CIRCUITS: Record<string, Circuit> = {
+  [SUZUKA.id]: SUZUKA,
+  [SPA.id]: SPA,
+  [INTERLAGOS.id]: INTERLAGOS,
   [NOVA_CIRCUIT.id]: NOVA_CIRCUIT,
   [JACAREPAGUA.id]: JACAREPAGUA,
 }

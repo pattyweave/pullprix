@@ -1,0 +1,6 @@
+.dashboard-track-lab-controls { height:48px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 20px; border-bottom:1px solid var(--pp-line); font-size:12px; }
+.dashboard-track-lab-controls label { display:flex; align-items:center; gap:10px; }
+.dashboard-track-lab-controls select { background:var(--pp-surface); border:1px solid var(--pp-line); border-radius:4px; padding:6px; }
+.dashboard-track-lab-controls>span { color:var(--pp-text-faint); }
+.dashboard-track-lab .team-race { height:calc(100svh - 4rem - 48px); }
+@media(max-width:600px) { .dashboard-track-lab-controls { padding:0 12px; }.dashboard-track-lab-controls>span { display:none; } }

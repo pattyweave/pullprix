@@ -151,3 +151,8 @@
 .race-health .race-data-notes { margin-top:8px; }
 .race-health .race-data-notes summary { padding-top:8px; }
 .race-live-state { max-width:155px; }
+
+/* Spa's upper straight occupies the legacy left-hand title position. */
+@media(min-width:1100px) {
+ .team-race[data-circuit="spa-francorchamps"] .race-circuit-label { left:calc(50% + min(14vw, 200px)); }
+}

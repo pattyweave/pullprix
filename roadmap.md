@@ -2456,3 +2456,21 @@ Validation: 56 connected-dashboard tests, production build and lint (existing wa
 - Verify actual header-link navigation for both pilot teams after deployment.
 
 Validation: production build; Vercel success; actual header-link clicks verified on both pilot dashboards. Piss Boys Studio September archive displays 10 team points and its champion; Pull-Prix history lists September as finalizing.
+
+## PP-095 — Track readiness and local comparison
+
+**Status:** DONE — approved for production
+
+- Give every path sampler independent geometry; validate closed racing-line paths and viewBoxes.
+- Verify multiple simultaneous maps, wraparound, ties and start-line positions using browser-native SVG geometry.
+- Build a development-only comparison with identical five-driver scenarios and alternate shapes.
+- Prepare Suzuka, Spa and Interlagos as registered continuous paths with source-alignment previews and reproducible generation.
+- Default the team dashboard to Suzuka after local review; preserve the demo circuit and keep the comparison labs development-only.
+
+Validation: 498 tests; production build and lint (existing warnings only). Browser-native checks pass on eight simultaneous circuits with ties, all-zero and multi-lap scenarios. All 3,000 sampled F1 centerline points lie inside the source ribbons. Topology tests verify one Suzuka crossover and no unintended crossings. Mobile comparison has no horizontal overflow. Lab excluded from production builds. Original SVGs preserved; no push or deployment. Dashboard circuit selection/season rotation remains unchanged.
+
+PP-095 dashboard follow-up: added a development-only actual-dashboard preview with five sample drivers, replay and a non-fetching review queue. Compared Suzuka, Spa and Interlagos against the real rails/transport. Fixed Spa's desktop title overlap using a circuit-specific placement; verified Suzuka desktop/mobile selection and replay. Production default remains Jacarepaguá. Local only.
+
+Release: user approved committing and pushing all PP-095 updates, with Suzuka selected as the team dashboard default. Final release checks recorded below.
+
+Final release validation: 498 tests passed (55 files); build and lint passed with existing warnings. Both local comparison pages and sample data are absent from production bundles.

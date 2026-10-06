@@ -1,0 +1,30 @@
+.track-lab { max-width:1600px; margin:auto; padding:32px 24px; }
+.track-lab h1 { font-size:clamp(24px,4vw,36px); font-weight:600; margin:10px 0; }
+.track-lab-description,.track-lab-pending { color:var(--pp-text-dim); font-size:14px; max-width:800px; line-height:1.6; }
+.track-lab-controls { display:flex; flex-wrap:wrap; gap:20px; align-items:center; margin:24px 0; }
+.track-lab-controls label { display:grid; gap:8px; font-size:13px; }
+.track-lab-controls select { background:var(--pp-surface); border:1px solid var(--pp-line-strong); padding:10px; border-radius:6px; min-height:44px; }
+.track-lab-controls input[type=range] { min-width:200px; height:44px; accent-color:var(--pp-accent); }
+.track-lab-controls .track-lab-check { display:flex; align-items:center; min-height:44px; }
+.track-lab-drivers { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+.track-lab-drivers button { display:flex; align-items:center; gap:8px; min-height:44px; border:1px solid; padding:8px 12px; border-radius:6px; font-size:13px; }
+.track-lab-drivers button[aria-pressed=true] { background:var(--pp-surface); }
+.track-lab-drivers button span { width:8px; height:8px; border-radius:50%; }
+.track-lab-drivers small { color:var(--pp-text-faint); }
+.track-lab-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; margin-top:24px; }
+.track-lab-grid.is-focused { grid-template-columns:1fr; }
+.track-lab-card { min-width:0; border:1px solid var(--pp-line-strong); border-radius:12px; background:radial-gradient(ellipse at center,var(--pp-surface),var(--pp-void) 75%); }
+.track-lab-card header { display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between; padding:16px; }
+.track-lab-card h2 { font-weight:600; }
+.track-lab-card header span,.track-lab-meta { color:var(--pp-text-faint); font:11px monospace; }
+.track-lab-map { height:380px; padding:30px; }
+.track-lab-grid.is-focused .track-lab-map { height:600px; }
+.track-lab-meta { padding:16px; }
+.track-lab :is(button,input,select):focus-visible { outline:2px solid var(--pp-accent); outline-offset:4px; }
+@media(max-width:700px) { .track-lab { padding:24px 12px; }.track-lab-grid { grid-template-columns:1fr; }.track-lab-map,.track-lab-grid.is-focused .track-lab-map { height:320px; padding:16px; } }
+
+.track-lab-artwork-title { margin-top:40px; font-size:20px; font-weight:600; }
+.track-lab-artwork { border:1px solid var(--pp-line-strong); border-radius:12px; padding:16px; }
+.track-lab-artwork img { width:100%; height:320px; object-fit:contain; }
+
+@media(min-width:1100px) { .track-lab-grid:not(.is-focused) { grid-template-columns:repeat(3,minmax(0,1fr)); } }

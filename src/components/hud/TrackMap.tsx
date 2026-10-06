@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { motion, useMotionValue } from 'framer-motion'
 
+import { validateCircuit } from '@/features/track/path-geometry'
 import type { Circuit } from '@/features/track/circuits'
 import { usePathSampler } from '@/features/track/usePathSampler'
 import type { PathSampler } from '@/features/track/usePathSampler'
@@ -17,7 +18,7 @@ export interface TrackDriver {
   id: string
   /** Short label rendered beside the marker (e.g. initials). */
   label?: string
-  /** Lap progress, 0 (start/finish) → 1 (full lap). Clamped on sample. */
+  /** Lap progress, 0 (start/finish) → 1 (full lap). Wraps on each completed lap. */
   progress: number
   /** Marker fill; falls back to the accent colour. */
   color?: string
@@ -45,12 +46,8 @@ export interface TrackMapProps {
  * The visual centrepiece: a glowing circuit with driver markers positioned by
  * lap progress.
  *
- * Motion: each marker springs its `progress` scalar and re-samples the path
- * every frame, so the marker stays *exactly on the racing line* as it moves —
- * it follows the curve rather than cutting straight across. Changing a driver's
- * `progress` (a new replay day, an overtake) eases it along the track for free.
- * Selection gently enlarges the marker; hover lifts its glow. Springs are
- * highly damped for a restrained, premium feel.
+ * Driver position is sampled directly from progress. Selection uses a spring;
+ * continuous race motion, when present, is supplied by the parent replay clock.
  */
 export function TrackMap({
   circuit,
@@ -60,19 +57,22 @@ export function TrackMap({
   onSelectDriver,
   className,
 }: TrackMapProps) {
+  useMemo(() => validateCircuit(circuit), [circuit])
   const sampler = usePathSampler(circuit.path)
+  const bloomId = `track-bloom-${useId().replace(/:/g, '')}`
   const [, , vbW, vbH] = circuit.viewBox
 
-  // Stroke/marker sizes are authored against a 1000-unit-wide reference and
+  // Stroke/marker sizes are authored against a 1000-unit reference on the longer axis and
   // scaled to whatever viewBox the imported circuit uses, so any track looks
   // consistent. `markerRadius` (if passed) overrides the scaled default.
-  const k = vbW / 1000
+  const referenceSize = Math.max(vbW, vbH)
+  const k = referenceSize / 1000
   const stroke = { halo: 26 * k, base: 14 * k, line: 3 * k, sector: 4 * k }
   const radius = markerRadius ?? Math.max(5, 9 * k)
 
   // Pad the viewBox slightly so marker labels and edge glow are never clipped.
   const [vbX, vbY] = circuit.viewBox
-  const pad = vbW * 0.06
+  const pad = referenceSize * 0.06
   const paddedViewBox = [
     vbX - pad,
     vbY - pad,
@@ -100,7 +100,7 @@ export function TrackMap({
       >
         <defs>
           <filter
-            id="track-bloom"
+            id={bloomId}
             x="-20%"
             y="-20%"
             width="140%"
@@ -118,7 +118,7 @@ export function TrackMap({
           strokeWidth={stroke.halo}
           strokeLinecap="round"
           strokeLinejoin="round"
-          filter="url(#track-bloom)"
+          filter={`url(#${bloomId})`}
         />
         {/* Dark base ribbon */}
         <path
@@ -162,7 +162,7 @@ export function TrackMap({
             sampler={sampler}
             radius={radius}
             k={k}
-            labelSize={Math.round(vbW / 90)}
+            labelSize={referenceSize / 90}
             labelAnchor={d.label && d.label.length > 3 ? (sampler.pointAt(d.progress).x > vbX + vbW / 2 ? 'end' : 'start') : 'middle'}
             onSelect={onSelectDriver}
           />
@@ -174,9 +174,8 @@ export function TrackMap({
 }
 
 /**
- * A single animated driver marker. Position glides via a damped spring (so
- * `progress` changes and overtakes animate); selection enlarges it; hover
- * lifts a soft glow. Restrained throughout — no bounce, no spin.
+ * A driver marker positioned on the sampled path. Selection enlarges it and
+ * hover lifts its glow; position itself does not interpolate between samples.
  */
 function DriverMarker({
   driver: d,
@@ -267,7 +266,7 @@ function StartLine({
 }) {
   const { x, y, angle } = sampler.pointAt(0)
   return (
-    <g data-track-start="true" transform={`translate(${x} ${y}) rotate(${angle + 90})`}>
+    <g data-track-start="true" transform={`translate(${x} ${y}) rotate(${angle})`}>
       <rect
         x={-1}
         y={-size / 2}

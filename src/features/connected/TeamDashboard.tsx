@@ -1,5 +1,5 @@
 import { TrackMap } from '../../components/hud/TrackMap'
-import { JACAREPAGUA } from '../track/circuits'
+import { SUZUKA, type Circuit } from '../track/circuits'
 import { useSnapshotReplay } from './useSnapshotReplay'
 import { driverColors, trackDrivers } from './track-drivers'
 import { Component, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
@@ -51,7 +51,8 @@ function ConnectedTeam({ installationId }: { installationId: number }) {
   return <LiveDashboard data={state.data} installationId={installationId} refreshing={state.refreshing}
     refresh={state.refresh} retryImports={state.retryImports} />
 }
-function LiveDashboard({ data, installationId, refreshing, refresh, retryImports }: {
+export function LiveDashboard({ data, installationId, refreshing, refresh, retryImports, circuit = SUZUKA, reviewQueue }: {
+  circuit?: Circuit; reviewQueue?: ReactNode;
   data: TeamData; installationId: number; refreshing: boolean; refresh: () => Promise<void>; retryImports: () => Promise<void>
 }) {
   const [selected, setSelected] = useState<string | null>(null)
@@ -71,7 +72,7 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
   const drivers = trackDrivers(frame.rows, selectedRow?.participantId, colors)
   const needsAttention = !teamSetup.repositories.length || teamSetup.repositories.some(r => r.status !== 'completed') || !!data.removedRepositoryCount
   const season = data.season.season
-  return <main className="team-race" data-view={mobileView}>
+  return <main className="team-race" data-view={mobileView} data-circuit={circuit.id}>
     <header className="race-header">
       <div className="min-w-0"><p className="hud-label text-accent race-header-eyebrow">Team championship</p><h1 className="race-team-name">{teamSetup.organization.name}</h1></div>
       <div className="race-season"><span className="hud-label">Season {season.id} · {season.phase === 'final_stage' ? RACING_MANIFEST.vocabulary.finalStage : 'Championship'}</span><span className="sr-only">Ends {new Date(season.endsAt).toLocaleString()}</span><SeasonCountdown endsAt={season.endsAt} onRollover={() => void refresh()} /></div>
@@ -85,8 +86,8 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
     {needsAttention && <button className="race-attention" onClick={() => { setMobileView('pit'); document.querySelector('.race-right [role="status"]')?.scrollIntoView({ block: 'nearest' }) }}>{teamSetup.repositories.some(r => r.status === 'failed' || r.status === 'cancelled') ? 'Repository import needs attention' : !teamSetup.repositories.length ? 'No repositories connected' : teamSetup.repositories.some(r => r.status !== 'completed') ? 'Importing repository activity' : 'Repository selection changed'} · View pit wall</button>}
     <div className="race-stage">
       <div className="race-track">
-        <div className="race-circuit-label">{(season.themePack?.id !== RACING_MANIFEST.id || season.themePack?.version !== RACING_MANIFEST.version) && <p role="status">The current season is updating. Refresh shortly to load its theme.</p>}<span className="hud-label">{historical ? 'Season replay' : 'Live circuit'}</span><p>Jacarepaguá</p></div>
-        <div className="race-track-map"><TrackMap circuit={JACAREPAGUA} drivers={drivers} onSelectDriver={setSelected} /></div>
+        <div className="race-circuit-label">{(season.themePack?.id !== RACING_MANIFEST.id || season.themePack?.version !== RACING_MANIFEST.version) && <p role="status">The current season is updating. Refresh shortly to load its theme.</p>}<span className="hud-label">{historical ? 'Season replay' : 'Live circuit'}</span><p>{circuit.name}</p></div>
+        <div className="race-track-map"><TrackMap circuit={circuit} drivers={drivers} onSelectDriver={setSelected} /></div>
         {selectedRow && <button className="race-mobile-driver" onClick={() => setMobileView('standings')}>{selectedRow.displayName} · {selectedRow.points} pts · View driver</button>}
       </div>
       <aside className="race-left" aria-label="Championship and driver">
@@ -131,7 +132,7 @@ function LiveDashboard({ data, installationId, refreshing, refresh, retryImports
         </details>
       </>}
     </section>
-    <ReviewQueue key={installationId} installationId={installationId} organizationId={data.setup.organization.id} />
+    {reviewQueue ?? <ReviewQueue key={installationId} installationId={installationId} organizationId={data.setup.organization.id} />}
     <TeamNotice data={data} />
     <details className="race-panel race-operations"><summary className="race-menu-heading"><Settings2 size={16} aria-hidden="true" />Team menu</summary>
     <div className="mt-3 flex flex-wrap gap-3"><button className={button} disabled={refreshing} onClick={() => void refresh()}>{refreshing ? 'Refreshing…' : 'Refresh'}</button><a className="race-action" href="/sign-in?account=1">Switch team</a><a className="race-action" href={`/teams/${installationId}/history`}>Season history</a></div>

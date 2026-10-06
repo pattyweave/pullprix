@@ -23,7 +23,7 @@ describe('PP-061 connected dashboard', () => {
     expect(screen.queryByText('Standings are not available on this setup page yet.')).toBeNull()
     expect(screen.queryByText('Apex Predator')).toBeNull()
     expect(screen.getByText('Copy team link')).toBeTruthy()
-    expect(screen.getByRole('img', { name: /with 2 drivers/ })).toBeTruthy()
+    expect(screen.getByRole('img', { name: 'Suzuka with 2 drivers' })).toBeTruthy()
     fireEvent.click(document.querySelector('[data-driver="zero"]')!)
     expect(screen.getByLabelText('Selected driver stats').textContent).toContain('New Driver')
   })
